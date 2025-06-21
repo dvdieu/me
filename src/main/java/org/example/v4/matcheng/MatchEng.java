@@ -1,6 +1,10 @@
 package org.example.v4.matcheng;
 
 import org.example.v4.common.L2MarketData;
+import org.example.v4.matching.MatchingHandler;
+import org.example.v4.matching.MatchingHandlerFactory;
+import org.example.v4.matching.MatchingStrategy;
+import org.example.v4.matching.context.MatchingContext;
 import org.example.v4.order.Order;
 import org.example.v4.order.OrderSide;
 import org.example.v4.order.OrderType;
@@ -13,9 +17,20 @@ import java.util.*;
 
 public class MatchEng {
 
+    private final MatchingHandler matchingHandler;
     private final OrderBook orderBook = new OrderBook();
     private final StopBook stopBook = new StopBook();
     private final Deque<Order> commandQueue = new LinkedList<>();
+    private final MatchingContext matchingContext = new MatchingContext();
+
+    public MatchEng() {
+        this(MatchingStrategy.FIFO);
+    }
+
+    public MatchEng(MatchingStrategy matchingStrategy) {
+        matchingHandler = MatchingHandlerFactory.getMatchingProcessor(matchingStrategy);
+    }
+
 
     private long lastTradePrice = 0;
 
@@ -91,10 +106,10 @@ public class MatchEng {
 
 
     private void matchOrder(Order incoming) {
-        Deque<Order> selfMatchOrders = new LinkedList<>();
-        Deque<Order> refilledOrders = new LinkedList<>();
+        matchingContext.initContext(incoming);
 
-        PriceLevel priceLevel = orderBook.getBestLevel(incoming.side.getOpposite());
+        OrderSide sideOpposite = incoming.side.getOpposite();
+        PriceLevel priceLevel = orderBook.getBestLevel(sideOpposite);
         while (incoming.remainingQuantity > 0 && priceLevel != null) {
             long bestPrice = priceLevel.price;
             if(incoming.isPriceUnacceptable(bestPrice)) {
@@ -103,48 +118,22 @@ public class MatchEng {
 
             long prevTradePrice = lastTradePrice == 0? bestPrice : lastTradePrice;
 
-            tryMatchAtPriceLevel(incoming, priceLevel, selfMatchOrders, refilledOrders);
+            matchingContext.updatePriceLevel(priceLevel);
+            matchingHandler.tryMatchInstantly(matchingContext);
+            matchingContext.refilledOrders.forEach(orderBook::addOrder);
+            if(matchingContext.lastTradePrice != 0) {
+                lastTradePrice = matchingContext.lastTradePrice;
+            }
 
             triggerStopOrders(incoming, prevTradePrice, lastTradePrice);
 
-
-            refilledOrders.forEach(orderBook::addOrder);
-            refilledOrders.clear();
-
-            priceLevel = orderBook.getBestLevel(incoming.side.getOpposite());
+            if(priceLevel.isEmpty()) {
+                orderBook.removeLevel(sideOpposite, priceLevel.price);
+            }
+            priceLevel = orderBook.getBestLevel(sideOpposite);
         }
 
-        selfMatchOrders.forEach(orderBook::addOrder);
-    }
-
-    private void tryMatchAtPriceLevel(Order incoming, PriceLevel priceLevel, Deque<Order> selfMatchOrders, Deque<Order> refilledOrders) {
-        Iterator<Order> iterator = priceLevel.orders.iterator();
-        while (incoming.remainingQuantity > 0 && iterator.hasNext()) {
-            Order resting = iterator.next();
-            if(incoming.isSelfMatch(resting)) {
-                iterator.remove();
-                selfMatchOrders.add(resting);
-                continue;
-            }
-
-            lastTradePrice = priceLevel.price;
-            long tradeSize = Math.min(incoming.remainingQuantity, resting.displayedQuantity);
-            incoming.matching(resting, tradeSize);
-            System.out.printf("Trade: %s (Maker) %d vs %s (Taker) %d @%d => %d\n",
-                    resting.side, resting.id, incoming.side, incoming.id, priceLevel.price, tradeSize);
-
-            if(resting.displayedQuantity == 0) {
-                iterator.remove();
-                if(priceLevel.isEmpty()) {
-                    orderBook.removeLevel(resting.side, priceLevel.price);
-                }
-
-                Order icebergChild = resting.createIcebergChild();
-                if(icebergChild != null) {
-                    refilledOrders.add(icebergChild);
-                }
-            }
-        }
+        matchingContext.selfMatchOrders.forEach(orderBook::addOrder);
     }
 
     private void triggerStopOrders(Order incoming, long prevPrice, long lastPrice) {
