@@ -41,12 +41,14 @@ public class MatchEng {
         System.out.println("Placing order: " + order);
 
         if(order.type == OrderType.STOP_MARKET || order.type == OrderType.STOP_LIMIT) {
-            // TODO: check if can trigger now
+            if(order.stopPrice != lastTradePrice) {
+                stopBook.addStopOrder(order);
+                System.out.println("-> Stop order added (waiting for trigger)");
+                logOrderBookState();
+                return;
+            }
 
-            stopBook.addStopOrder(order);
-            System.out.println("-> Stop order added (waiting for trigger)");
-            logOrderBookState();
-            return;
+            order.convertStopOrderToOrder();
         }
 
         commandQueue.add(order);
@@ -146,11 +148,8 @@ public class MatchEng {
         List<Order> triggeredStopOrders = stopBook.getTriggeredStopOrders(prevPrice, lastPrice);
         for (Order stopOrder : triggeredStopOrders) {
             System.out.printf("-> Triggered: %s %s (id=%d) at trigger price %d" + (stopOrder.type == OrderType.STOP_LIMIT? ", limitPrice = " + stopOrder.price : "") + "\n", stopOrder.side, stopOrder.type, stopOrder.id, stopOrder.stopPrice);
-            if(stopOrder.type == OrderType.STOP_LIMIT) {
-                stopOrder.type = OrderType.LIMIT;
-            } else {
-                stopOrder.type = OrderType.MARKET;
-            }
+
+            stopOrder.convertStopOrderToOrder();
 
             if(incoming.side == stopOrder.side) {
                 boolean shouldAddToCommandQueue = stopOrder.type == OrderType.MARKET ||

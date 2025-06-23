@@ -236,6 +236,62 @@ class MatchEngStopOrderTest {
         checkEventTrade(triggerAndAddToCommandQueueOrder, 2, 4, 95, 1);
     }
 
+    @Test
+    void shouldAddStopOrderToOrderBookWhenLastPriceEqualStopPrice() {
+        MatchEng matchEng = new MatchEng();
+
+        matchEng.placeOrder(Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 94, 1));
+        matchEng.placeOrder(Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
+        matchEng.placeOrder(Order.createStandardOrder(3, 2, BUY, LIMIT, GTC, 94, 1));
+
+        Order incoming = Order.createStopOrder(4, 2, BUY, STOP_LIMIT, GTC, 94, 95, 5);
+        matchEng.placeOrder(incoming);
+
+        L2MarketData snapshot = matchEng.getL2MarketData();
+        L2MarketData expected = new L2MarketData(
+                new long[]{96},
+                new long[]{1},
+                new long[]{1},
+                new long[]{95},
+                new long[]{5},
+                new long[]{1}
+        );
+
+        assertEquals(expected, snapshot);
+        assertEquals(5, incoming.remainingQuantity);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(0));
+    }
+
+    @Test
+    void shouldMatchStopOrderImmediatelyWhenLastPriceEqualStopPrice() {
+        MatchEng matchEng = new MatchEng();
+
+        matchEng.placeOrder(Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 94, 1));
+        matchEng.placeOrder(Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
+        matchEng.placeOrder(Order.createStandardOrder(3, 2, BUY, LIMIT, GTC, 94, 1));
+
+        Order incoming = Order.createStopOrder(4, 2, BUY, STOP_LIMIT, GTC, 94, 100, 5);
+        matchEng.placeOrder(incoming);
+
+        L2MarketData snapshot = matchEng.getL2MarketData();
+        L2MarketData expected = new L2MarketData(
+                new long[]{},
+                new long[]{},
+                new long[]{},
+                new long[]{100},
+                new long[]{4},
+                new long[]{1}
+        );
+
+        assertEquals(expected, snapshot);
+        assertEquals(4, incoming.remainingQuantity);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(1));
+        checkEventTrade(incoming, 0, 2, 96, 1);
+    }
+
+
     //=============================================================================================
     public void checkEventTrade(Order incoming, int index, long matchedId, long price, long size) {
         MatcherTradeEvent event = incoming.matcherTradeEvents.get(index);

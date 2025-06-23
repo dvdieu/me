@@ -130,4 +130,12 @@ public class Order {
         }
 
     }
+
+    public void convertStopOrderToOrder() {
+        if(type == OrderType.STOP_LIMIT) {
+            type = OrderType.LIMIT;
+        } else {
+            type = OrderType.MARKET;
+        }
+    }
 }
