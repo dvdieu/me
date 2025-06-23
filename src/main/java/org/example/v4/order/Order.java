@@ -1,5 +1,10 @@
 package org.example.v4.order;
 
+import org.example.v4.common.MatcherTradeEvent;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Order {
 
     public long id;
@@ -15,6 +20,7 @@ public class Order {
     public long hiddenQuantity;
     public boolean isIceberg;
     public long icebergPeak;
+    public List<MatcherTradeEvent> matcherTradeEvents = new ArrayList<>();
 
 
     private Order(long id, int userId, OrderSide side, OrderType type, TimeInForce tif, long price, long quantity) {

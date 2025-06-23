@@ -1,11 +1,11 @@
 package org.example.v4.matching.context;
 
+import org.example.v4.common.MatcherTradeEvent;
 import org.example.v4.order.Order;
 import org.example.v4.orderbook.PriceLevel;
 
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
+import java.util.function.Consumer;
 
 public class MatchingContext {
 
@@ -14,8 +14,8 @@ public class MatchingContext {
     public long bucketRemaining;
     public long lastTradePrice;
 
-    public Deque<Order> selfMatchOrders = new LinkedList<>();
-    public Deque<Order> refilledOrders = new LinkedList<>();
+    public List<Order> selfMatchOrders = new ArrayList<>();
+    public List<Order> refilledOrders = new ArrayList<>();
 
 
 
@@ -29,7 +29,7 @@ public class MatchingContext {
         this.refilledOrders.clear();
         this.lastTradePrice = 0;
         this.bucketRemaining = priceLevel.orders.stream()
-                .filter(o -> incoming.isSelfMatch(o))
+                .filter(o -> !incoming.isSelfMatch(o))
                 .mapToLong(o -> o.displayedQuantity).sum();
     }
 
@@ -41,6 +41,8 @@ public class MatchingContext {
         incoming.matching(resting, tradeSize);
         System.out.printf("Trade: %s (Maker) %d vs %s (Taker) %d @%d => %d\n",
                 resting.side, resting.id, incoming.side, incoming.id, priceLevel.price, tradeSize);
+
+        incoming.matcherTradeEvents.add(MatcherTradeEvent.createTradeEvent(resting.id, resting.price, tradeSize));
 
         if(resting.displayedQuantity == 0) {
             iterator.remove();

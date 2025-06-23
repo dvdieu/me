@@ -23,7 +23,7 @@ public class LMMStep extends BaseMatchingStep {
                 continue;
             }
 
-            int lmmPercentage = config.lmmPerThousands.get(resting.userId);
+            int lmmPercentage = config.lmmPerThousands.getOrDefault(resting.userId, 0);
             if(lmmPercentage != 0) {
                 long lmmAllocate = lmmPercentage * remainingSize / 1000;
                 long minTradeSize = Math.max(lmmAllocate, config.lmmMinFill);

@@ -1,6 +1,7 @@
 package org.example.v4.matcheng;
 
 import org.example.v4.common.L2MarketData;
+import org.example.v4.common.MatcherTradeEvent;
 import org.example.v4.matching.MatchingHandler;
 import org.example.v4.matching.MatchingHandlerFactory;
 import org.example.v4.matching.MatchingStrategy;
@@ -64,6 +65,7 @@ public class MatchEng {
             long available = calculatePotentialFill(incoming);
             if(available < needed) {
                 System.out.println("-> FOK check FAILED: needed " + needed + ", available " + available);
+                incoming.matcherTradeEvents.addFirst(MatcherTradeEvent.createRejectEvent(incoming.remainingQuantity));
                 return;
             }
         }
@@ -75,6 +77,7 @@ public class MatchEng {
                 orderBook.addOrder(incoming);
                 System.out.println("-> Partially filled, " + incoming.remainingQuantity + " remaining added to book as resting order");
             } else {
+                incoming.matcherTradeEvents.addFirst(MatcherTradeEvent.createRejectEvent(incoming.remainingQuantity));
                 System.out.println("-> IOC leftover cancelled: " + incoming.remainingQuantity + " not filled");
             }
         }

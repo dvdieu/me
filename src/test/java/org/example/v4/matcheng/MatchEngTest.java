@@ -1,5 +1,7 @@
 package org.example.v4.matcheng;
 
+import org.example.v4.common.MatcherEventType;
+import org.example.v4.common.MatcherTradeEvent;
 import org.example.v4.order.Order;
 import org.example.v4.common.L2MarketData;
 import org.junit.jupiter.api.Test;
@@ -9,6 +11,8 @@ import static org.example.v4.order.OrderSide.SELL;
 import static org.example.v4.order.OrderType.LIMIT;
 import static org.example.v4.order.OrderType.MARKET;
 import static org.example.v4.order.TimeInForce.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -36,6 +40,9 @@ class MatchEngTest {
         );
 
         assertEquals(expected, snapshot);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(1));
+        checkEventTrade(incoming, 0, 1, 100, 5);
     }
 
     @Test
@@ -59,6 +66,9 @@ class MatchEngTest {
         );
 
         assertEquals(expected, snapshot);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(1));
+        checkEventTrade(incoming, 0, 1, 100, 5);
     }
 
     @Test
@@ -82,6 +92,10 @@ class MatchEngTest {
         );
 
         assertEquals(expected, snapshot);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(2));
+        checkEventRejection(incoming, 0, 5);
+        checkEventTrade(incoming, 1, 1, 100, 5);
     }
 
     @Test
@@ -105,6 +119,8 @@ class MatchEngTest {
         );
 
         assertEquals(expected, snapshot);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(0));
     }
 
     @Test
@@ -128,6 +144,9 @@ class MatchEngTest {
         );
 
         assertEquals(expected, snapshot);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(1));
+        checkEventRejection(incoming, 0, 10);
     }
 
     @Test
@@ -152,6 +171,9 @@ class MatchEngTest {
         );
 
         assertEquals(expected, snapshot);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(1));
+        checkEventRejection(incoming, 0, 21);
     }
 
     @Test
@@ -176,6 +198,9 @@ class MatchEngTest {
         );
 
         assertEquals(expected, snapshot);
+        assertThat(incoming.matcherTradeEvents.size(), is(2));
+        checkEventTrade(incoming, 0, 1, 101, 5);
+        checkEventTrade(incoming, 1, 2, 100, 4);
     }
 
     @Test
@@ -200,6 +225,28 @@ class MatchEngTest {
         );
 
         assertEquals(expected, snapshot);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(4));
+        checkEventTrade(incoming, 0, 1, 100, 2);
+        checkEventTrade(incoming, 1, 2, 100, 5);
+        checkEventTrade(incoming, 2, 1, 100, 2);
+        checkEventTrade(incoming, 3, 1, 100, 1);
     }
 
+    //=============================================================================================
+    public void checkEventTrade(Order incoming, int index, long matchedId, long price, long size) {
+        MatcherTradeEvent event = incoming.matcherTradeEvents.get(index);
+        assertThat(event.eventType, is(MatcherEventType.TRADE));
+        assertThat(event.matchedOrderId, is(matchedId));
+        assertThat(event.matchedPrice, is(price));
+        assertThat(event.size, is(size));
+    }
+
+    public void checkEventRejection(Order incoming, int index, long size) {
+        MatcherTradeEvent event = incoming.matcherTradeEvents.get(index);
+        assertThat(event.eventType, is(MatcherEventType.REJECT));
+        assertThat(event.size, is(size));
+        assertThat(event.matchedOrderId, is(0L));
+        assertThat(event.matchedPrice, is(0L));
+    }
 }
