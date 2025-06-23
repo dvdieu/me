@@ -48,7 +48,7 @@ public class MatchEng {
                 return;
             }
 
-            order.convertStopOrderToOrder();
+            order.convertToExecutableOrderType();
         }
 
         commandQueue.add(order);
@@ -88,14 +88,13 @@ public class MatchEng {
 
 
     private long calculatePotentialFill(Order order) {
-        // TODO: check stop book
-
         long available = 0;
         long needed = order.remainingQuantity;
 
         OrderSide oppositeSide = order.side.getOpposite();
         Iterator<Map.Entry<Long, PriceLevel>> iterator = orderBook.getLevels(oppositeSide).entrySet().iterator();
 
+        long prevPrice = lastTradePrice;
         while(iterator.hasNext() && available < needed) {
             Map.Entry<Long, PriceLevel> entry = iterator.next();
             long price = entry.getKey();
@@ -107,6 +106,10 @@ public class MatchEng {
             available += entry.getValue().orders.stream()
                     .filter(e -> !order.isSelfMatch(e))
                     .mapToLong(e -> e.remainingQuantity).sum();
+
+            available += stopBook.calculateLiquidity(order, prevPrice, price);
+
+            prevPrice = price;
         }
 
         return available;
@@ -149,7 +152,7 @@ public class MatchEng {
         for (Order stopOrder : triggeredStopOrders) {
             System.out.printf("-> Triggered: %s %s (id=%d) at trigger price %d" + (stopOrder.type == OrderType.STOP_LIMIT? ", limitPrice = " + stopOrder.price : "") + "\n", stopOrder.side, stopOrder.type, stopOrder.id, stopOrder.stopPrice);
 
-            stopOrder.convertStopOrderToOrder();
+            stopOrder.convertToExecutableOrderType();
 
             if(incoming.side == stopOrder.side) {
                 boolean shouldAddToCommandQueue = stopOrder.type == OrderType.MARKET ||

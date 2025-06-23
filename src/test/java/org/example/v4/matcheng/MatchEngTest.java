@@ -150,7 +150,7 @@ class MatchEngTest {
         matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 10));
         matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 110, 10));
 
-        Order incoming = Order.createStandardOrder(3, 2, SELL, MARKET, FOK, 0, 21);
+        Order incoming = Order.createStandardOrder(3, 2, SELL, MARKET, FOK, 0, 25);
         matchEng.placeOrder(incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
@@ -164,10 +164,10 @@ class MatchEngTest {
         );
 
         assertEquals(expected, snapshot);
-        assertEquals(21, incoming.remainingQuantity);
+        assertEquals(25, incoming.remainingQuantity);
 
         assertThat(incoming.matcherTradeEvents.size(), is(1));
-        checkEventRejection(incoming, 0, 21);
+        checkEventRejection(incoming, 0, 25);
     }
 
     @Test

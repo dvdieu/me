@@ -9,8 +9,7 @@ import org.junit.jupiter.api.Test;
 import static org.example.v4.order.OrderSide.BUY;
 import static org.example.v4.order.OrderSide.SELL;
 import static org.example.v4.order.OrderType.*;
-import static org.example.v4.order.TimeInForce.GTC;
-import static org.example.v4.order.TimeInForce.IOC;
+import static org.example.v4.order.TimeInForce.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -289,6 +288,37 @@ class MatchEngStopOrderTest {
 
         assertThat(incoming.matcherTradeEvents.size(), is(1));
         checkEventTrade(incoming, 0, 2, 96, 1);
+    }
+
+    @Test
+    void shouldMatchFOKFromOrderBookAndStopBook() {
+        MatchEng matchEng = new MatchEng();
+        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 10));
+        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 110, 10));
+        matchEng.placeOrder(Order.createStopOrder(3, 1, BUY, STOP_LIMIT, GTC, 105, 105, 3));
+        matchEng.placeOrder(Order.createStopOrder(4, 1, BUY, STOP_LIMIT, GTC, 100, 100, 3));
+
+        Order incoming = Order.createStandardOrder(10, 2, SELL, MARKET, FOK, 0, 25);
+        matchEng.placeOrder(incoming);
+
+        L2MarketData snapshot = matchEng.getL2MarketData();
+        L2MarketData expected = new L2MarketData(
+                new long[]{},
+                new long[]{},
+                new long[]{},
+                new long[]{100},
+                new long[]{1},
+                new long[]{1}
+        );
+
+        assertEquals(expected, snapshot);
+        assertEquals(0, incoming.remainingQuantity);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(4));
+        checkEventTrade(incoming, 0, 2, 110, 10);
+        checkEventTrade(incoming, 1, 1, 100, 10);
+        checkEventTrade(incoming, 2, 3, 100, 3);
+        checkEventTrade(incoming, 3, 4, 100, 2);
     }
 
 

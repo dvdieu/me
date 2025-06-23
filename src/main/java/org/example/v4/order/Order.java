@@ -131,7 +131,7 @@ public class Order {
 
     }
 
-    public void convertStopOrderToOrder() {
+    public void convertToExecutableOrderType() {
         if(type == OrderType.STOP_LIMIT) {
             type = OrderType.LIMIT;
         } else {
