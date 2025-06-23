@@ -37,6 +37,7 @@ public class MatchEng {
 
 
     public void placeOrder(Order order) {
+        System.out.println("--------------------------------------------------------");
         System.out.println("Placing order: " + order);
 
         if(order.type == OrderType.STOP_MARKET || order.type == OrderType.STOP_LIMIT) {
@@ -52,10 +53,10 @@ public class MatchEng {
 
         while(!commandQueue.isEmpty()) {
             Order incoming = commandQueue.poll();
+            System.out.println("\nProcess order: " + order);
             processIncomingOrder(incoming);
         }
 
-        System.out.println();
         logOrderBookState();
     }
 
@@ -85,6 +86,8 @@ public class MatchEng {
 
 
     private long calculatePotentialFill(Order order) {
+        // TODO: check stop book
+
         long available = 0;
         long needed = order.remainingQuantity;
 
@@ -141,16 +144,75 @@ public class MatchEng {
 
     private void triggerStopOrders(Order incoming, long prevPrice, long lastPrice) {
         List<Order> triggeredStopOrders = stopBook.getTriggeredStopOrders(prevPrice, lastPrice);
-        for (Order order : triggeredStopOrders) {
+        for (Order stopOrder : triggeredStopOrders) {
+            System.out.printf("-> Triggered: %s %s (id=%d) at trigger price %d" + (stopOrder.type == OrderType.STOP_LIMIT? ", limitPrice = " + stopOrder.price : "") + "\n", stopOrder.side, stopOrder.type, stopOrder.id, stopOrder.stopPrice);
+            if(stopOrder.type == OrderType.STOP_LIMIT) {
+                stopOrder.type = OrderType.LIMIT;
+            } else {
+                stopOrder.type = OrderType.MARKET;
+            }
 
+            if(incoming.side == stopOrder.side) {
+                boolean shouldAddToCommandQueue = stopOrder.type == OrderType.MARKET ||
+                        (incoming.side == OrderSide.BUY && stopOrder.price >= lastPrice) ||
+                        (incoming.side == OrderSide.SELL && stopOrder.price <= lastPrice);
+
+                if (shouldAddToCommandQueue) {
+                    commandQueue.add(stopOrder);
+                    System.out.println("Add to command queue");
+                } else {
+                    orderBook.addOrder(stopOrder);
+                    System.out.println("Add to order book");
+                }
+            }
+            else {
+                boolean shouldMatch = stopOrder.type == OrderType.MARKET ||
+                                (stopOrder.side == OrderSide.SELL && stopOrder.price <= lastPrice) ||
+                                (stopOrder.side == OrderSide.BUY && stopOrder.price >= lastPrice);
+
+                if (shouldMatch) {
+                    matchDirect(incoming, stopOrder);
+                } else {
+                    orderBook.addOrder(stopOrder);
+                    System.out.println("Add to order book");
+                }
+            }
+        }
+    }
+
+    private void matchDirect(Order incoming, Order stopOrder) {
+        if(incoming.remainingQuantity == 0) {
+            commandQueue.add(stopOrder);
+            System.out.println("Add to command queue");
+            return;
         }
 
+        if(stopOrder.timeInForce == TimeInForce.FOK) {
+            if(incoming.remainingQuantity < stopOrder.remainingQuantity) {
+                commandQueue.add(stopOrder);
+                System.out.println("Add to command queue");
+                return;
+            }
+        }
+
+        long tradeSize = Math.min(incoming.remainingQuantity, stopOrder.remainingQuantity);
+        System.out.printf("Trade: %s (Maker) %d vs %s (Taker) %d @%d => %d\n",
+                stopOrder.side, stopOrder.id, incoming.side, incoming.id, lastTradePrice, tradeSize);
+
+        incoming.matching(stopOrder, tradeSize);
+        incoming.matcherTradeEvents.add(MatcherTradeEvent.createTradeEvent(stopOrder.id, lastTradePrice, tradeSize));
+
+        if(stopOrder.remainingQuantity > 0) {
+            commandQueue.add(stopOrder);
+        }
     }
 
 
     private void logOrderBookState() {
+        System.out.println();
         orderBook.logOrderBookState();
         stopBook.logStopBookState();
+        System.out.println();
     }
 
     public L2MarketData getL2MarketData() {

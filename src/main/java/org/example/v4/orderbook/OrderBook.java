@@ -61,7 +61,7 @@ public class OrderBook {
         } else {
             buyLevels.values().forEach(this::logPriceLevel);
         }
-        System.out.println();
+
         System.out.println();
     }
 

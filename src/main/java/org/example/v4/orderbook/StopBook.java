@@ -21,7 +21,7 @@ public class StopBook {
 
 
     public void addStopOrder(Order order) {
-        PriceLevel level = getOrCreateLevel(order.side, order.price);
+        PriceLevel level = getOrCreateLevel(order.side, order.stopPrice);
         level.addOrder(order);
     }
 
@@ -44,8 +44,17 @@ public class StopBook {
     }
 
     private void collectTriggeredOrders(SortedMap<Long, PriceLevel> levels, List<Order> out) {
-        for (PriceLevel level : levels.values()) {
-            out.addAll(level.orders);
+        for (Map.Entry<Long, PriceLevel> longPriceLevelEntry : levels.entrySet()) {
+            PriceLevel priceLevel = longPriceLevelEntry.getValue();
+
+            out.addAll(priceLevel.orders);
+
+            Order order = priceLevel.orders.getFirst();
+            if(order.side == OrderSide.BUY) {
+                buyStopLevels.remove(order.stopPrice);
+            } else {
+                sellStopLevels.remove(order.stopPrice);
+            }
         }
     }
 
@@ -55,19 +64,19 @@ public class StopBook {
             return;
         }
 
-        System.out.println("Stop Book:");
+        System.out.println("\nStop Book:");
         if(!sellStopLevels.isEmpty()) {
-            System.out.println("Sell triggers: ");
+            System.out.print("Sell triggers: \t");
             for (Map.Entry<Long, PriceLevel> entry : sellStopLevels.entrySet()) {
-                System.out.println(entry.getKey() + "[" + entry.getValue().orders.size() + "] ");
+                System.out.print(entry.getKey() + "[" + entry.getValue().orders.size() + "] \t");
             }
             System.out.println();
         }
 
         if(!buyStopLevels.isEmpty()) {
-            System.out.println("Buy triggers: ");
+            System.out.println("Buy triggers : \t");
             for (Map.Entry<Long, PriceLevel> entry : buyStopLevels.entrySet()) {
-                System.out.println(entry.getKey() + "[" + entry.getValue().orders.size() + "] ");
+                System.out.print(entry.getKey() + "[" + entry.getValue().orders.size() + "] \t");
             }
             System.out.println();
         }

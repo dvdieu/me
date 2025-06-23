@@ -51,6 +51,7 @@ public class MatchEngConfigurableTest {
         );
 
         assertEquals(expected, snapshot);
+        assertEquals(0, incoming.remainingQuantity);
 
         assertThat(incoming.matcherTradeEvents.size(), is(3));
         checkEventTrade(incoming, 0, 8L, 201000L, 28L);
@@ -78,6 +79,7 @@ public class MatchEngConfigurableTest {
         );
 
         assertEquals(expected, snapshot);
+        assertEquals(0, incoming.remainingQuantity);
 
         assertThat(incoming.matcherTradeEvents.size(), is(3));
         checkEventTrade(incoming, 0, 8L, 201000L, 28L);
@@ -105,6 +107,7 @@ public class MatchEngConfigurableTest {
         );
 
         assertEquals(expected, snapshot);
+        assertEquals(0, incoming.remainingQuantity);
 
         assertThat(incoming.matcherTradeEvents.size(), is(6));
         checkEventTrade(incoming, 0, 8L, 201000L, 16L); // PRO-Rata       28/262 * 155 = 16
@@ -134,6 +137,7 @@ public class MatchEngConfigurableTest {
         );
 
         assertEquals(expected, snapshot);
+        assertEquals(238, incoming.remainingQuantity);
 
         assertThat(incoming.matcherTradeEvents.size(), is(6));
 
@@ -164,6 +168,7 @@ public class MatchEngConfigurableTest {
         );
 
         assertEquals(expected, snapshot);
+        assertEquals(0, incoming.remainingQuantity);
 
         assertThat(incoming.matcherTradeEvents.size(), is(5));
         checkEventTrade(incoming, 0, 8L, 201000L, 18L); // PRO-Rata       28/230 * 155 = 18
@@ -195,6 +200,7 @@ public class MatchEngConfigurableTest {
         );
 
         assertEquals(expected, snapshot);
+        assertEquals(0, incoming.remainingQuantity);
 
         assertThat(incoming.matcherTradeEvents.size(), is(5));
         checkEventTrade(incoming, 0, 8L, 201000L, 7L);
@@ -223,6 +229,7 @@ public class MatchEngConfigurableTest {
         );
 
         assertEquals(expected, snapshot);
+        assertEquals(238, incoming.remainingQuantity);
 
         assertThat(incoming.matcherTradeEvents.size(), is(6));
 
@@ -253,6 +260,7 @@ public class MatchEngConfigurableTest {
         );
 
         assertEquals(expected, snapshot);
+        assertEquals(0, incoming.remainingQuantity);
 
         assertThat(incoming.matcherTradeEvents.size(), is(4));
         checkEventTrade(incoming, 0, 8L, 201000L, 7L);

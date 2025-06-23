@@ -68,9 +68,17 @@ public class Order {
         return order;
     }
 
+    public static Order createStopIcebergOrder(long id, int userId, OrderSide side, OrderType type, long stopPrice, long price, long quantity, long icebergPeak) {
+        Order order = createIcebergOrder(id, userId, side, price, quantity, icebergPeak);
+        order.stopPrice = stopPrice;
+        order.type = type;
+
+        return order;
+    }
+
     public Order createIcebergChild() {
-        if (!this.isIceberg || this.hiddenQuantity <= 0) return null;
         if (this.displayedQuantity > 0) return this;
+        if (!this.isIceberg || this.hiddenQuantity <= 0) return null;
 
         long newDisplay = Math.min(this.hiddenQuantity, this.icebergPeak);
         this.displayedQuantity = newDisplay;
@@ -109,8 +117,17 @@ public class Order {
     public void matching(Order makerOrder, long tradeSize) {
         this.remainingQuantity -= tradeSize;
         this.displayedQuantity -= tradeSize;
+        if(this.remainingQuantity > 0 && this.displayedQuantity < 0) {
+            this.displayedQuantity = Math.min(this.icebergPeak, this.remainingQuantity);
+            this.hiddenQuantity = this.remainingQuantity - this.displayedQuantity;
+        }
 
         makerOrder.remainingQuantity -= tradeSize;
         makerOrder.displayedQuantity -= tradeSize;
+        if(makerOrder.remainingQuantity > 0 && makerOrder.displayedQuantity < 0) {
+            makerOrder.displayedQuantity = Math.min(makerOrder.icebergPeak, makerOrder.remainingQuantity);
+            makerOrder.hiddenQuantity = makerOrder.remainingQuantity - makerOrder.displayedQuantity;
+        }
+
     }
 }
