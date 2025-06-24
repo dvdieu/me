@@ -74,25 +74,12 @@ public class StopBook {
     }
 
     private void collectTriggeredOrders(SortedMap<Long, PriceLevel> levels, List<Order> out) {
-        if (levels.isEmpty()) {
-            return;
-        }
-
-        List<Long> stopPrices = new ArrayList<>();
-        for (Map.Entry<Long, PriceLevel> entry : levels.entrySet()) {
-            stopPrices.add(entry.getKey());
+        Iterator<Map.Entry<Long, PriceLevel>> iterator = levels.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Long, PriceLevel> entry = iterator.next();
             out.addAll(entry.getValue().orders);
-        }
 
-        Order order = levels.firstEntry().getValue().orders.getFirst();
-        if (order.side == OrderSide.BUY) {
-            for (Long stopPrice : stopPrices) {
-                buyStopLevels.remove(stopPrice);
-            }
-        } else {
-            for (Long stopPrice : stopPrices) {
-                sellStopLevels.remove(stopPrice);
-            }
+            iterator.remove();
         }
     }
 
@@ -112,7 +99,7 @@ public class StopBook {
         }
 
         if (!buyStopLevels.isEmpty()) {
-            System.out.println("Buy triggers : \t");
+            System.out.print("Buy triggers : \t");
             for (Map.Entry<Long, PriceLevel> entry : buyStopLevels.entrySet()) {
                 System.out.print(entry.getKey() + "[" + entry.getValue().orders.size() + "] \t");
             }
