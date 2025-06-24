@@ -132,9 +132,14 @@ public class MatchEng {
 
             matchingContext.updatePriceLevel(priceLevel);
             matchingHandler.tryMatchInstantly(matchingContext);
-            matchingContext.refilledOrders.forEach(orderBook::addOrder);
+
             if(matchingContext.lastTradePrice != 0) {
                 lastTradePrice = matchingContext.lastTradePrice;
+            }
+
+            for (Order refilledOrder : matchingContext.refilledOrders) {
+                orderBook.addOrder(refilledOrder);
+                System.out.printf("-> Iceberg order %d refilled [displayed=%d, hidden=%d] and placed at end of queue\n", refilledOrder.id, refilledOrder.displayedQuantity, refilledOrder.remainingQuantity);
             }
 
             triggerStopOrders(incoming, prevTradePrice, lastTradePrice);
