@@ -17,7 +17,7 @@ public class LMMStep extends BaseMatchingStep {
 
         Iterator<Order> iterator = context.priceLevel.orders.iterator();
 
-        while (iterator.hasNext() && context.incoming.remainingQuantity > 0 && remainingLmmQuota > 0) {
+        while (iterator.hasNext() && remainingLmmQuota > 0) {
             Order resting = iterator.next();
             if (checkSelfMatching(context, resting, iterator)) {
                 continue;
@@ -27,7 +27,7 @@ public class LMMStep extends BaseMatchingStep {
             if(lmmPercentage != 0) {
                 long lmmAllocate = lmmPercentage * remainingSize / 1000;
                 long minTradeSize = Math.max(lmmAllocate, config.lmmMinFill);
-                long tradeSize = Math.min(Math.min(minTradeSize, remainingLmmQuota), context.incoming.remainingQuantity);
+                long tradeSize = Math.min(Math.min(minTradeSize, remainingLmmQuota), resting.displayedQuantity);
 
                 remainingLmmQuota -= tradeSize;
                 context.performMatch(iterator, resting, tradeSize);
