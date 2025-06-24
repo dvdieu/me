@@ -117,18 +117,9 @@ public class Order {
     public void matching(Order makerOrder, long tradeSize) {
         this.remainingQuantity -= tradeSize;
         this.displayedQuantity -= tradeSize;
-        if(this.remainingQuantity > 0 && this.displayedQuantity < 0) {
-            this.displayedQuantity = Math.min(this.icebergPeak, this.remainingQuantity);
-            this.hiddenQuantity = this.remainingQuantity - this.displayedQuantity;
-        }
 
         makerOrder.remainingQuantity -= tradeSize;
         makerOrder.displayedQuantity -= tradeSize;
-        if(makerOrder.remainingQuantity > 0 && makerOrder.displayedQuantity < 0) {
-            makerOrder.displayedQuantity = Math.min(makerOrder.icebergPeak, makerOrder.remainingQuantity);
-            makerOrder.hiddenQuantity = makerOrder.remainingQuantity - makerOrder.displayedQuantity;
-        }
-
     }
 
     public void convertToExecutableOrderType() {
@@ -136,6 +127,13 @@ public class Order {
             type = OrderType.LIMIT;
         } else {
             type = OrderType.MARKET;
+        }
+    }
+
+    public void correctOverfilledIcebergDisplay() {
+        if(this.remainingQuantity > 0 && this.displayedQuantity < 0) {
+            this.displayedQuantity = Math.min(this.icebergPeak, this.remainingQuantity);
+            this.hiddenQuantity = this.remainingQuantity - this.displayedQuantity;
         }
     }
 }

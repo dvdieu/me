@@ -74,6 +74,7 @@ public class MatchEng {
         }
 
         matchOrder(incoming);
+        incoming.correctOverfilledIcebergDisplay();
 
         if(incoming.remainingQuantity > 0) {
             if(incoming.timeInForce == TimeInForce.GTC) {
@@ -204,6 +205,7 @@ public class MatchEng {
         incoming.matching(stopOrder, tradeSize);
         incoming.matcherTradeEvents.add(MatcherTradeEvent.createTradeEvent(stopOrder.id, lastTradePrice, tradeSize));
 
+        stopOrder.correctOverfilledIcebergDisplay();
         if(stopOrder.remainingQuantity > 0) {
             commandQueue.add(stopOrder);
         }
