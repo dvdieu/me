@@ -189,7 +189,7 @@ public class MatchEng {
     }
 
     private void matchDirect(Order incoming, Order stopOrder) {
-        if(incoming.remainingQuantity == 0) {
+        if(incoming.remainingQuantity == 0 || incoming.isSelfMatch(stopOrder)) {
             commandQueue.add(stopOrder);
             System.out.println("Add to command queue");
             return;
