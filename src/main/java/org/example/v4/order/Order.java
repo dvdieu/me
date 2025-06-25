@@ -131,9 +131,13 @@ public class Order {
     }
 
     public void correctOverfilledIcebergDisplay() {
-        if(this.remainingQuantity > 0 && this.displayedQuantity < 0) {
-            this.displayedQuantity = Math.min(this.icebergPeak, this.remainingQuantity);
-            this.hiddenQuantity = this.remainingQuantity - this.displayedQuantity;
+        if(this.displayedQuantity < 0) {
+            if(this.remainingQuantity > 0) {
+                this.displayedQuantity = Math.min(this.icebergPeak, this.remainingQuantity);
+                this.hiddenQuantity = this.remainingQuantity - this.displayedQuantity;
+            } else {
+                this.displayedQuantity = 0;
+            }
         }
     }
 }
