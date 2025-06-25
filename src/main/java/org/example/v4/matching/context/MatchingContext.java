@@ -5,7 +5,6 @@ import org.example.v4.order.Order;
 import org.example.v4.orderbook.PriceLevel;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 public class MatchingContext {
 
