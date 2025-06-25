@@ -137,6 +137,7 @@ public class Order {
                 this.hiddenQuantity = this.remainingQuantity - this.displayedQuantity;
             } else {
                 this.displayedQuantity = 0;
+                this.hiddenQuantity = 0;
             }
         }
     }
