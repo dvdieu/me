@@ -106,9 +106,9 @@ public class Order {
         return details;
     }
 
-    public boolean isPriceUnacceptable(long offerPrice) {
-        if(price == 0) return false;
-        return (side == OrderSide.BUY) ? (offerPrice > price) : (offerPrice < price);
+    public boolean isPriceAcceptable(long offerPrice) {
+        if(price == 0) return true;
+        return (side == OrderSide.BUY) ? (offerPrice <= price) : (offerPrice >= price);
     }
 
     public boolean isSelfMatch(Order resting) {

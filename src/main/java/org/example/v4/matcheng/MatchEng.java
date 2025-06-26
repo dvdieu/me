@@ -75,7 +75,7 @@ public class MatchEng {
 
         if(incoming.postOnly) {
             PriceLevel priceLevel = orderBook.getBestLevel(incoming.side.getOpposite());
-            if(priceLevel != null && !incoming.isPriceUnacceptable(priceLevel.price)) {
+            if(priceLevel != null && incoming.isPriceAcceptable(priceLevel.price)) {
                 System.out.println("-> Post Only check FAILED: limitPrice: " + incoming.price + ", bestPrice: " + priceLevel.price);
                 incoming.matcherTradeEvents.addFirst(MatcherTradeEvent.createRejectEvent(incoming.remainingQuantity));
                 return;
@@ -109,7 +109,7 @@ public class MatchEng {
             Map.Entry<Long, PriceLevel> entry = iterator.next();
             long price = entry.getKey();
 
-            if(order.isPriceUnacceptable(price)) {
+            if(!order.isPriceAcceptable(price)) {
                 break;
             }
 
@@ -133,7 +133,7 @@ public class MatchEng {
         PriceLevel priceLevel = orderBook.getBestLevel(sideOpposite);
         while (incoming.remainingQuantity > 0 && priceLevel != null) {
             long bestPrice = priceLevel.price;
-            if(incoming.isPriceUnacceptable(bestPrice)) {
+            if(!incoming.isPriceAcceptable(bestPrice)) {
                 break;
             }
 
