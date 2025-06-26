@@ -20,6 +20,7 @@ public class Order {
     public long hiddenQuantity;
     public boolean isIceberg;
     public long icebergPeak;
+    public boolean postOnly;
     public List<MatcherTradeEvent> matcherTradeEvents = new ArrayList<>();
 
 
@@ -140,5 +141,10 @@ public class Order {
                 this.hiddenQuantity = 0;
             }
         }
+    }
+
+    public Order postOnly() {
+        this.postOnly = true;
+        return this;
     }
 }

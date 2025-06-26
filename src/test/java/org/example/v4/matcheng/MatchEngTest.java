@@ -226,6 +226,59 @@ class MatchEngTest {
         checkEventTrade(incoming, 3, 1, 100, 1);
     }
 
+
+    @Test
+    public void shouldAddPostOnlyOrders() {
+        MatchEng matchEng = new MatchEng();
+        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 5));
+        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 100, 10));
+
+        Order incoming = Order.createStandardOrder(3, 2, SELL, LIMIT, GTC, 110, 10).postOnly();
+        matchEng.placeOrder(incoming);
+
+        L2MarketData snapshot = matchEng.getL2MarketData();
+        L2MarketData expected = new L2MarketData(
+                new long[]{110},
+                new long[]{10},
+                new long[]{1},
+                new long[]{100},
+                new long[]{15},
+                new long[]{2}
+        );
+
+        assertEquals(expected, snapshot);
+        assertEquals(10, incoming.remainingQuantity);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(0));
+    }
+
+
+    @Test
+    public void shouldRejectPostOnlyOrders() {
+        MatchEng matchEng = new MatchEng();
+        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 5));
+        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 100, 10));
+
+        Order incoming = Order.createStandardOrder(3, 2, SELL, LIMIT, GTC, 90, 10).postOnly();
+        matchEng.placeOrder(incoming);
+
+        L2MarketData snapshot = matchEng.getL2MarketData();
+        L2MarketData expected = new L2MarketData(
+                new long[]{},
+                new long[]{},
+                new long[]{},
+                new long[]{100},
+                new long[]{15},
+                new long[]{2}
+        );
+
+        assertEquals(expected, snapshot);
+        assertEquals(10, incoming.remainingQuantity);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(1));
+        checkEventRejection(incoming, 0, 10);
+    }
+
     //=============================================================================================
     public void checkEventTrade(Order incoming, int index, long matchedId, long price, long size) {
         MatcherTradeEvent event = incoming.matcherTradeEvents.get(index);
