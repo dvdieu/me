@@ -76,7 +76,7 @@ public class MatchEng {
         if(incoming.postOnly) {
             PriceLevel priceLevel = orderBook.getBestLevel(incoming.side.getOpposite());
             if(priceLevel != null && !incoming.isPriceUnacceptable(priceLevel.price)) {
-                System.out.println("-> Post Only check FAILED: price: " + incoming.price + ", bestPrice: " + priceLevel.price);
+                System.out.println("-> Post Only check FAILED: limitPrice: " + incoming.price + ", bestPrice: " + priceLevel.price);
                 incoming.matcherTradeEvents.addFirst(MatcherTradeEvent.createRejectEvent(incoming.remainingQuantity));
                 return;
             }
