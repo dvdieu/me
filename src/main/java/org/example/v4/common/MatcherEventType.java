@@ -6,4 +6,5 @@ public enum MatcherEventType {
 
     REJECT,
 
+    REDUCE
 }

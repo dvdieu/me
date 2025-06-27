@@ -26,6 +26,17 @@ public class StopBook {
         level.addOrder(order);
     }
 
+    public void removeOrder(Order order) {
+        TreeMap<Long, PriceLevel> levels = getLevels(order.side);
+        PriceLevel priceLevel = levels.get(order.stopPrice);
+        if(priceLevel != null) {
+            priceLevel.orders.remove(order);
+            if(priceLevel.orders.isEmpty()) {
+                levels.remove(order.price);
+            }
+        }
+    }
+
     public long calculateLiquidity(Order incoming, long prevPrice, long newPrice) {
         if (prevPrice == newPrice) {
             return 0;

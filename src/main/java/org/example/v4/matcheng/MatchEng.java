@@ -22,7 +22,8 @@ public class MatchEng {
     private final OrderBook orderBook = new OrderBook();
     private final StopBook stopBook = new StopBook();
     private final Deque<Order> commandQueue = new LinkedList<>();
-    private final MatchingContext matchingContext = new MatchingContext();
+    private final Map<Long, Order> orders = new HashMap<>();
+    private final MatchingContext matchingContext = new MatchingContext(order -> orders.remove(order.id));
 
     public MatchEng() {
         this(MatchingStrategy.FIFO);
@@ -39,6 +40,12 @@ public class MatchEng {
     public void placeOrder(Order order) {
         System.out.println("--------------------------------------------------------");
         System.out.println("Placing order: " + order);
+
+        if(orders.containsKey(order.id)) {
+            order.matcherTradeEvents.add(MatcherTradeEvent.createRejectEvent(order.remainingQuantity));
+            System.out.println("duplicate order id: " + order.id);
+            return;
+        }
 
         if(order.type == OrderType.STOP_MARKET || order.type == OrderType.STOP_LIMIT) {
             if(order.stopPrice != lastTradePrice) {
@@ -60,6 +67,30 @@ public class MatchEng {
         }
 
         logOrderBookState();
+    }
+
+    public Order cancelOrder(long orderId) {
+        Order order = orders.remove(orderId);
+        if(order == null) {
+            return null;
+        }
+
+        System.out.println("--------------------------------------------------------");
+        System.out.println("Cancel order: " + order);
+
+        if(order.type == OrderType.LIMIT || order.type == OrderType.MARKET) {
+            orderBook.removeOrder(order);
+            order.matcherTradeEvents.add(MatcherTradeEvent.createReduceEvent(order.remainingQuantity));
+        } else {
+            stopBook.removeOrder(order);
+        }
+
+        logOrderBookState();
+        return order;
+    }
+
+    public Order getOrderById(long orderId) {
+        return orders.get(orderId);
     }
 
     private void processIncomingOrder(Order incoming) {
@@ -88,6 +119,7 @@ public class MatchEng {
         if(incoming.remainingQuantity > 0) {
             if(incoming.timeInForce == TimeInForce.GTC) {
                 orderBook.addOrder(incoming);
+                orders.put(incoming.id, incoming);
                 System.out.println("-> Partially filled, " + incoming.remainingQuantity + " remaining added to book as resting order");
             } else {
                 incoming.matcherTradeEvents.addFirst(MatcherTradeEvent.createRejectEvent(incoming.remainingQuantity));

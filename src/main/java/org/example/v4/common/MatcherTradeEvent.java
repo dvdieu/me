@@ -25,4 +25,11 @@ public final class MatcherTradeEvent {
         return event;
     }
 
+    public static MatcherTradeEvent createReduceEvent(long size) {
+        MatcherTradeEvent event = new MatcherTradeEvent();
+        event.eventType = MatcherEventType.REDUCE;
+        event.size = size;
+        return event;
+    }
+
 }

@@ -8,6 +8,8 @@ import java.util.*;
 
 public class MatchingContext {
 
+    public final RestingOrderCompleteCallback restingOrderCompleteCallback;
+
     public Order incoming;
     public PriceLevel priceLevel;
     public long bucketRemaining;
@@ -16,6 +18,9 @@ public class MatchingContext {
     public List<Order> selfMatchOrders = new ArrayList<>();
     public List<Order> refilledOrders = new ArrayList<>();
 
+    public MatchingContext(RestingOrderCompleteCallback restingOrderCompleteCallback) {
+        this.restingOrderCompleteCallback = restingOrderCompleteCallback;
+    }
 
 
     public void initContext(Order incoming) {
@@ -50,7 +55,13 @@ public class MatchingContext {
             if(icebergChild != null) {
                 refilledOrders.add(icebergChild);
             }
+
+            restingOrderCompleteCallback.apply(resting);
         }
     }
 
+
+    public interface RestingOrderCompleteCallback {
+        void apply(Order order);
+    }
 }

@@ -38,8 +38,17 @@ public class OrderBook {
 
     public void removeLevel(OrderSide side, long price) {
         TreeMap<Long, PriceLevel> levels = getLevels(side);
-        if (levels != null) {
-            levels.remove(price);
+        levels.remove(price);
+    }
+
+    public void removeOrder(Order order) {
+        TreeMap<Long, PriceLevel> levels = getLevels(order.side);
+        PriceLevel priceLevel = levels.get(order.price);
+        if(priceLevel != null) {
+            priceLevel.orders.remove(order);
+            if(priceLevel.orders.isEmpty()) {
+                levels.remove(order.price);
+            }
         }
     }
 

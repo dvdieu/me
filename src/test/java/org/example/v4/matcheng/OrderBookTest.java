@@ -19,7 +19,7 @@ import static org.example.v4.order.TimeInForce.GTC;
 import static org.example.v4.order.TimeInForce.IOC;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OrderBookTest {
 
@@ -114,6 +114,54 @@ public class OrderBookTest {
         assertEquals(expectedState.build(), snapshot);
     }
 
+    /**
+     * Ignore order with duplicate orderId
+     */
+    @Test
+    public void shouldIgnoredDuplicateOrder() {
+        Order incoming = Order.createStandardOrder(1, UID_1, SELL, LIMIT, GTC, 81600, 100);
+        matchEng.placeOrder(incoming);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(1));
+    }
+
+    @Test
+    public void shouldRemoveBidOrder() {
+        // remove bid order
+        Order order = matchEng.cancelOrder(5);
+
+        expectedState.setBidVolume(1, 1).decrementBidOrdersNum(1);
+        assertEquals(expectedState.build(), matchEng.getL2MarketData());
+
+        assertThat(order.matcherTradeEvents.size(), is(1));
+        checkEventReduce(order, 0, 20L);
+    }
+
+    @Test
+    public void shouldRemoveAskOrder() {
+        // remove ask order
+        Order order = matchEng.cancelOrder(2);
+
+        expectedState.setAskVolume(0, 25).decrementAskOrdersNum(0);
+        assertEquals(expectedState.build(), matchEng.getL2MarketData());
+
+        assertThat(order.matcherTradeEvents.size(), is(1));
+        checkEventReduce(order, 0, 50L);
+    }
+
+    @Test
+    public void shouldRemoveOrderAndEmptyBucket() {
+        Order order2 = matchEng.cancelOrder(2);
+        assertThat(order2.matcherTradeEvents.size(), is(1));
+        checkEventReduce(order2, 0, 50L);
+
+        Order order3 = matchEng.cancelOrder(3);
+        assertThat(order3.matcherTradeEvents.size(), is(1));
+        checkEventReduce(order3, 0, 25L);
+
+        assertEquals(expectedState.removeAsk(0).build(), matchEng.getL2MarketData());
+    }
+
     // ------------------------ MATCHING TESTS -----------------------
 
     @Test
@@ -145,6 +193,10 @@ public class OrderBookTest {
         assertThat(incoming.matcherTradeEvents.size(), is(2));
         checkEventTrade(incoming, 0, 4L, 81593, 40L);
         checkEventTrade(incoming, 1, 5L, 81590, 1L);
+
+        // check orders are removed from map
+        assertNull(matchEng.getOrderById(4L));
+        assertNotNull(matchEng.getOrderById(5L));
     }
 
     @Test
@@ -162,6 +214,11 @@ public class OrderBookTest {
         checkEventTrade(incoming, 0, 2L, 81599L, 50L);
         checkEventTrade(incoming, 1, 3L, 81599L, 25L);
         checkEventTrade(incoming, 2, 1L, 81600L, 100L);
+
+        // check orders are removed from map
+        assertNull(matchEng.getOrderById(1L));
+        assertNull(matchEng.getOrderById(2L));
+        assertNull(matchEng.getOrderById(3L));
     }
 
     @Test
@@ -269,6 +326,14 @@ public class OrderBookTest {
     public void checkEventRejection(Order incoming, int index, long size) {
         MatcherTradeEvent event = incoming.matcherTradeEvents.get(index);
         assertThat(event.eventType, is(MatcherEventType.REJECT));
+        assertThat(event.size, is(size));
+        assertThat(event.matchedOrderId, is(0L));
+        assertThat(event.matchedPrice, is(0L));
+    }
+
+    public void checkEventReduce(Order incoming, int index, long size) {
+        MatcherTradeEvent event = incoming.matcherTradeEvents.get(index);
+        assertThat(event.eventType, is(MatcherEventType.REDUCE));
         assertThat(event.size, is(size));
         assertThat(event.matchedOrderId, is(0L));
         assertThat(event.matchedPrice, is(0L));
