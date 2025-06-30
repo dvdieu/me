@@ -1,7 +1,6 @@
 package org.example.v4.orderbook;
 
 import org.example.v4.order.Order;
-import org.example.v4.order.OrderSide;
 import org.example.v4.order.OrderType;
 import org.example.v4.order.TimeInForce;
 
@@ -11,12 +10,12 @@ public class StopBook {
 
     private final TreeMap<Long, PriceLevel> stopLevels = new TreeMap<>();
 
-    private PriceLevel getOrCreateLevel(OrderSide side, long price) {
+    private PriceLevel getOrCreateLevel(long price) {
         return stopLevels.computeIfAbsent(price, PriceLevel::new);
     }
 
     public void addStopOrder(Order order) {
-        PriceLevel level = getOrCreateLevel(order.side, order.stopPrice);
+        PriceLevel level = getOrCreateLevel(order.stopPrice);
         level.addOrder(order);
     }
 
