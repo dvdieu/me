@@ -3,23 +3,17 @@ package org.example.v4.orderbook;
 import org.example.v4.order.Order;
 import org.example.v4.order.OrderSide;
 import org.example.v4.order.OrderType;
+import org.example.v4.order.TimeInForce;
 
 import java.util.*;
 
 public class StopBook {
 
-    private final TreeMap<Long, PriceLevel> sellStopLevels = new TreeMap<>();
-    private final TreeMap<Long, PriceLevel> buyStopLevels = new TreeMap<>();
-
-
-    private TreeMap<Long, PriceLevel> getLevels(OrderSide side) {
-        return side == OrderSide.BUY ? buyStopLevels : sellStopLevels;
-    }
+    private final TreeMap<Long, PriceLevel> stopLevels = new TreeMap<>();
 
     private PriceLevel getOrCreateLevel(OrderSide side, long price) {
-        return getLevels(side).computeIfAbsent(price, PriceLevel::new);
+        return stopLevels.computeIfAbsent(price, PriceLevel::new);
     }
-
 
     public void addStopOrder(Order order) {
         PriceLevel level = getOrCreateLevel(order.side, order.stopPrice);
@@ -27,12 +21,11 @@ public class StopBook {
     }
 
     public void removeOrder(Order order) {
-        TreeMap<Long, PriceLevel> levels = getLevels(order.side);
-        PriceLevel priceLevel = levels.get(order.stopPrice);
+        PriceLevel priceLevel = stopLevels.get(order.stopPrice);
         if(priceLevel != null) {
             priceLevel.orders.remove(order);
             if(priceLevel.orders.isEmpty()) {
-                levels.remove(order.price);
+                stopLevels.remove(order.price);
             }
         }
     }
@@ -42,23 +35,19 @@ public class StopBook {
             return 0;
         }
 
-        long totalLiquidity = 0;
-        if (newPrice > prevPrice) {
-            NavigableMap<Long, PriceLevel> subMap = sellStopLevels.subMap(prevPrice, false, newPrice, true);
-            for (PriceLevel priceLevel : subMap.values()) {
-                for (Order order : priceLevel.orders) {
-                    if (!incoming.isSelfMatch(order) && !(order.type == OrderType.LIMIT && order.price > newPrice)) {
-                        totalLiquidity += order.remainingQuantity;
-                    }
-                }
-            }
+        NavigableMap<Long, PriceLevel> subMap;
+        if(newPrice > prevPrice) {
+            subMap = stopLevels.subMap(prevPrice, false, newPrice, true);
         } else {
-            NavigableMap<Long, PriceLevel> subMap = buyStopLevels.subMap(newPrice, true, prevPrice, false);
-            for (PriceLevel priceLevel : subMap.values()) {
-                for (Order order : priceLevel.orders) {
-                    if (!incoming.isSelfMatch(order) && !(order.type == OrderType.LIMIT && order.price < newPrice)) {
-                        totalLiquidity += order.remainingQuantity;
-                    }
+            subMap = stopLevels.subMap(newPrice, true, prevPrice, false);
+        }
+
+        long totalLiquidity = 0;
+        for (PriceLevel priceLevel : subMap.values()) {
+            for (Order order : priceLevel.orders) {
+                if (!incoming.isSelfMatch(order) && order.timeInForce != TimeInForce.FOK
+                        && (order.type == OrderType.STOP_MARKET || incoming.isPriceAcceptable(order.price))) {
+                    totalLiquidity += order.remainingQuantity;
                 }
             }
         }
@@ -71,50 +60,35 @@ public class StopBook {
             return Collections.emptyList();
         }
 
-        List<Order> triggered = new ArrayList<>();
+        NavigableMap<Long, PriceLevel> subMap;
         if(newPrice > prevPrice) {
-            collectTriggeredOrders(buyStopLevels.subMap(prevPrice, false, newPrice, true), triggered);
-            collectTriggeredOrders(sellStopLevels.subMap(prevPrice, false, newPrice, true), triggered);
+            subMap = stopLevels.subMap(prevPrice, false, newPrice, true);
         } else {
-            collectTriggeredOrders(buyStopLevels.subMap(newPrice, true, prevPrice, false), triggered);
-            collectTriggeredOrders(sellStopLevels.subMap(newPrice, true, prevPrice, false), triggered);
+            subMap = stopLevels.subMap(newPrice, true, prevPrice, false).reversed();
         }
 
-        triggered.sort(Comparator.comparingLong(order -> order.id));
-        return triggered;
-    }
-
-    private void collectTriggeredOrders(SortedMap<Long, PriceLevel> levels, List<Order> out) {
-        Iterator<Map.Entry<Long, PriceLevel>> iterator = levels.entrySet().iterator();
+        List<Order> triggered = new ArrayList<>();
+        Iterator<Map.Entry<Long, PriceLevel>> iterator = subMap.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Long, PriceLevel> entry = iterator.next();
-            out.addAll(entry.getValue().orders);
+            triggered.addAll(entry.getValue().orders);
 
             iterator.remove();
         }
+
+        return triggered;
     }
 
-
     public void logStopBookState() {
-        if (sellStopLevels.isEmpty() && buyStopLevels.isEmpty()) {
+        if (stopLevels.isEmpty()) {
             return;
         }
 
         System.out.println("\nStop Book:");
-        if (!sellStopLevels.isEmpty()) {
-            System.out.print("Sell triggers: \t");
-            for (Map.Entry<Long, PriceLevel> entry : sellStopLevels.entrySet()) {
-                System.out.print(entry.getKey() + "[" + entry.getValue().orders.size() + "] \t");
-            }
-            System.out.println();
+        System.out.print("Price triggers: \t");
+        for (Map.Entry<Long, PriceLevel> entry : stopLevels.entrySet()) {
+            System.out.print(entry.getKey() + "[" + entry.getValue().orders.size() + "] \t");
         }
-
-        if (!buyStopLevels.isEmpty()) {
-            System.out.print("Buy triggers : \t");
-            for (Map.Entry<Long, PriceLevel> entry : buyStopLevels.entrySet()) {
-                System.out.print(entry.getKey() + "[" + entry.getValue().orders.size() + "] \t");
-            }
-            System.out.println();
-        }
+        System.out.println();
     }
 }
