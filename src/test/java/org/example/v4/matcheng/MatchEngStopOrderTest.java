@@ -321,6 +321,86 @@ class MatchEngStopOrderTest {
         checkEventTrade(incoming, 3, 4, 100, 2);
     }
 
+    @Test
+    void shouldTriggerStopBuyFromToLowAndRespectFIFO() {
+        MatchEng matchEng = new MatchEng();
+
+        matchEng.placeOrder(Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 93, 1));
+        matchEng.placeOrder(Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
+
+        matchEng.placeOrder(Order.createStopOrder(3, 1, SELL, STOP_MARKET, IOC, 94, 0, 5));
+        matchEng.placeOrder(Order.createStopOrder(4, 1, BUY, STOP_LIMIT, GTC, 96, 90, 10));
+        matchEng.placeOrder(Order.createStopOrder(5, 1, SELL, STOP_MARKET, IOC, 95, 0, 5));
+        matchEng.placeOrder(Order.createStopOrder(6, 1, SELL, STOP_LIMIT, GTC, 95, 95, 5));
+        matchEng.placeOrder(Order.createStopOrder(7, 1, SELL, STOP_LIMIT, GTC, 95, 96, 5));
+        matchEng.placeOrder(Order.createStopOrder(8, 1, SELL, STOP_LIMIT, GTC, 95, 97, 5));
+        matchEng.placeOrder(Order.createStopOrder(9, 1, BUY, STOP_LIMIT, GTC, 95, 90, 10));
+
+        Order incoming = Order.createStandardOrder(100, 2, BUY, LIMIT, GTC, 96, 20);
+        matchEng.placeOrder(incoming);
+
+        L2MarketData snapshot = matchEng.getL2MarketData();
+        L2MarketData expected = new L2MarketData(
+                new long[]{96, 97},
+                new long[]{2, 5},
+                new long[]{1, 1},
+                new long[]{90},
+                new long[]{20},
+                new long[]{2}
+        );
+
+        assertEquals(expected, snapshot);
+        assertEquals(0, incoming.remainingQuantity);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(6));
+        checkEventTrade(incoming, 0, 1, 93, 1);
+        checkEventTrade(incoming, 1, 2, 96, 1);
+        checkEventTrade(incoming, 2, 3, 96, 5);
+        checkEventTrade(incoming, 3, 5, 96, 5);
+        checkEventTrade(incoming, 4, 6, 96, 5);
+        checkEventTrade(incoming, 5, 7, 96, 3);
+    }
+
+
+    @Test
+    void shouldTriggerStopSellFromHighToLowAndRespectFIFO() {
+        MatchEng matchEng = new MatchEng();
+
+        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 93, 1));
+        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 96, 1));
+
+        matchEng.placeOrder(Order.createStopOrder(3, 1, BUY, STOP_MARKET, IOC, 94, 0, 5));
+        matchEng.placeOrder(Order.createStopOrder(4, 1, SELL, STOP_LIMIT, GTC, 96, 90, 10));
+        matchEng.placeOrder(Order.createStopOrder(5, 1, BUY, STOP_MARKET, IOC, 95, 0, 5));
+        matchEng.placeOrder(Order.createStopOrder(6, 1, BUY, STOP_LIMIT, GTC, 95, 95, 5));
+        matchEng.placeOrder(Order.createStopOrder(7, 1, BUY, STOP_LIMIT, GTC, 95, 96, 5));
+        matchEng.placeOrder(Order.createStopOrder(8, 1, BUY, STOP_LIMIT, GTC, 95, 97, 5));
+        matchEng.placeOrder(Order.createStopOrder(9, 1, SELL, STOP_LIMIT, GTC, 95, 90, 10));
+
+        Order incoming = Order.createStandardOrder(100, 2, SELL, LIMIT, GTC, 93, 20);
+        matchEng.placeOrder(incoming);
+
+        L2MarketData snapshot = matchEng.getL2MarketData();
+        L2MarketData expected = new L2MarketData(
+                new long[]{90},
+                new long[]{10},
+                new long[]{1},
+                new long[]{97},
+                new long[]{2},
+                new long[]{1}
+        );
+
+        assertEquals(expected, snapshot);
+        assertEquals(0, incoming.remainingQuantity);
+
+        assertThat(incoming.matcherTradeEvents.size(), is(6));
+        checkEventTrade(incoming, 0, 2, 96, 1);
+        checkEventTrade(incoming, 1, 1, 93, 1);
+        checkEventTrade(incoming, 2, 5, 93, 5);
+        checkEventTrade(incoming, 3, 6, 93, 5);
+        checkEventTrade(incoming, 4, 7, 93, 5);
+        checkEventTrade(incoming, 5, 8, 93, 3);
+    }
 
     //=============================================================================================
     public void checkEventTrade(Order incoming, int index, long matchedId, long price, long size) {
