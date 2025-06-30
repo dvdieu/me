@@ -64,6 +64,16 @@ public class MatchEng {
             Order incoming = commandQueue.poll();
             System.out.println("\nProcess order: " + order);
             processIncomingOrder(incoming);
+
+            if(!commandQueue.isEmpty()) {
+                System.out.println("\n\n Incoming order queue");
+                for (Order o : commandQueue) {
+                    System.out.println(o);
+                }
+
+                break;
+            }
+
         }
 
         logOrderBookState();
