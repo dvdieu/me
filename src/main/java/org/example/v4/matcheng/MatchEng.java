@@ -65,7 +65,7 @@ public class MatchEng {
             System.out.println("\nProcess order: " + order);
             processIncomingOrder(incoming);
 
-            if(!commandQueue.isEmpty()) {
+            if(!commandQueue.isEmpty() && order.stopAfterFirstCommand) {
                 System.out.println("\n\n Incoming order queue");
                 for (Order o : commandQueue) {
                     System.out.println(o);

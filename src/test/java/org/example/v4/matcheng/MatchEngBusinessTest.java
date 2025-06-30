@@ -70,6 +70,7 @@ public class MatchEngBusinessTest extends BaseMatchEngTest {
         matchEng.placeOrder(Order.createStopOrder(21, USER_SELL, SELL, STOP_MARKET, GTC, 102, 0, 4));
 
         Order incoming = Order.createStandardOrder(1000, -1, BUY, MARKET, GTC, 0, 50);
+        incoming.stopAfterFirstCommand = true;
         matchEng.placeOrder(incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();

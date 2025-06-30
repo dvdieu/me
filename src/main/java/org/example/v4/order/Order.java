@@ -21,6 +21,7 @@ public class Order {
     public boolean isIceberg;
     public long icebergPeak;
     public boolean postOnly;
+    public boolean stopAfterFirstCommand;
     public List<MatcherTradeEvent> matcherTradeEvents = new ArrayList<>();
 
 
