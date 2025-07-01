@@ -39,7 +39,14 @@ public class MatchingContext {
 
     public void performMatch(Iterator<Order> iterator, Order resting, long tradeSize) {
         this.bucketRemaining -= tradeSize;
-        matchingCallback.performMatch(this, iterator, resting, tradeSize);
+        matchingCallback.performMatch(incoming, iterator, resting, tradeSize);
+
+        if(resting.displayedQuantity == 0) {
+            Order icebergChild = resting.createIcebergChild();
+            if(icebergChild != null) {
+                refilledOrders.add(icebergChild);
+            }
+        }
     }
 
 }

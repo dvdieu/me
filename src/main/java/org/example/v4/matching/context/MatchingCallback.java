@@ -6,6 +6,6 @@ import java.util.Iterator;
 
 public interface MatchingCallback {
 
-    void performMatch(MatchingContext context, Iterator<Order> restingIterator, Order restingOrder, long tradeSize);
+    void performMatch(Order incoming, Iterator<Order> restingIterator, Order restingOrder, long tradeSize);
 
 }

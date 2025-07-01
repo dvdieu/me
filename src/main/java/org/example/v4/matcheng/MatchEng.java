@@ -263,9 +263,7 @@ public class MatchEng {
         }
     }
 
-    private void performMatch(MatchingContext context, Iterator<Order> restingIterator, Order resting, long tradeSize) {
-        Order incoming = context.incoming;
-
+    private void performMatch(Order incoming, Iterator<Order> restingIterator, Order resting, long tradeSize) {
         lastTradePrice = resting.price;
         incoming.matching(resting, tradeSize);
         System.out.printf("Trade: %s (Maker) %d vs %s (Taker) %d @%d => %d\n",
@@ -275,12 +273,6 @@ public class MatchEng {
 
         if(resting.displayedQuantity == 0) {
             restingIterator.remove();
-
-            Order icebergChild = resting.createIcebergChild();
-            if(icebergChild != null) {
-                context.refilledOrders.add(icebergChild);
-            }
-
             orders.remove(resting.id);
         }
     }
