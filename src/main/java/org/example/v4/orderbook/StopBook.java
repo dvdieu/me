@@ -14,18 +14,15 @@ public class StopBook {
         return stopLevels.computeIfAbsent(price, PriceLevel::new);
     }
 
-    public void addStopOrder(Order order) {
+    public DirectOrder addStopOrder(Order order) {
         PriceLevel level = getOrCreateLevel(order.stopPrice);
-        level.addOrder(order);
+        return level.addOrder(order);
     }
 
-    public void removeOrder(Order order) {
-        PriceLevel priceLevel = stopLevels.get(order.stopPrice);
-        if(priceLevel != null) {
-            priceLevel.orders.remove(order);
-            if(priceLevel.orders.isEmpty()) {
-                stopLevels.remove(order.price);
-            }
+    public void removeOrder(DirectOrder order) {
+        order.remove();
+        if(order.priceLevel.isEmpty()) {
+            stopLevels.remove(order.order.stopPrice);
         }
     }
 
@@ -43,7 +40,8 @@ public class StopBook {
 
         long totalLiquidity = 0;
         for (PriceLevel priceLevel : subMap.values()) {
-            for (Order order : priceLevel.orders) {
+            for (DirectOrder directOrder : priceLevel.orderStream().toList()) {
+                Order order = directOrder.order;
                 if (incoming.side != order.side && order.timeInForce != TimeInForce.FOK
                         && !incoming.isSelfMatch(order)
                         && (order.type == OrderType.STOP_MARKET || incoming.isPriceAcceptable(order.price))) {
@@ -71,7 +69,7 @@ public class StopBook {
         Iterator<Map.Entry<Long, PriceLevel>> iterator = subMap.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Long, PriceLevel> entry = iterator.next();
-            triggered.addAll(entry.getValue().orders);
+            entry.getValue().orderStream().forEach(e -> triggered.add(e.order));
 
             iterator.remove();
         }
@@ -87,7 +85,7 @@ public class StopBook {
         System.out.println("\nStop Book:");
         System.out.print("Price triggers: \t");
         for (Map.Entry<Long, PriceLevel> entry : stopLevels.entrySet()) {
-            System.out.print(entry.getKey() + "[" + entry.getValue().orders.size() + "] \t");
+            System.out.print(entry.getKey() + "[" + entry.getValue().orderStream().count() + "] \t");
         }
         System.out.println();
     }

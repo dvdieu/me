@@ -3,9 +3,7 @@ package org.example.v4.matching.steps;
 
 import org.example.v4.matching.context.MatchingConfig;
 import org.example.v4.matching.context.MatchingContext;
-import org.example.v4.order.Order;
-
-import java.util.Iterator;
+import org.example.v4.orderbook.DirectOrder;
 
 public class LMMStep extends BaseMatchingStep {
 
@@ -15,23 +13,21 @@ public class LMMStep extends BaseMatchingStep {
         long remainingSize = context.incoming.remainingQuantity;
         long remainingLmmQuota = config.totalLmmPerThousand * remainingSize / 1000;
 
-        Iterator<Order> iterator = context.priceLevel.orders.iterator();
+        DirectOrder directOrder = context.priceLevel.head;
+        while (directOrder != null && remainingLmmQuota > 0) {
+            if (checkSelfMatching(context, directOrder)) {
+                int lmmPercentage = config.lmmPerThousands.getOrDefault(directOrder.order.userId, 0);
+                if(lmmPercentage != 0) {
+                    long lmmAllocate = lmmPercentage * remainingSize / 1000;
+                    long minTradeSize = Math.max(lmmAllocate, config.lmmMinFill);
+                    long tradeSize = Math.min(Math.min(minTradeSize, remainingLmmQuota), directOrder.order.displayedQuantity);
 
-        while (iterator.hasNext() && remainingLmmQuota > 0) {
-            Order resting = iterator.next();
-            if (checkSelfMatching(context, resting, iterator)) {
-                continue;
+                    remainingLmmQuota -= tradeSize;
+                    context.performMatch(directOrder, tradeSize);
+                }
             }
 
-            int lmmPercentage = config.lmmPerThousands.getOrDefault(resting.userId, 0);
-            if(lmmPercentage != 0) {
-                long lmmAllocate = lmmPercentage * remainingSize / 1000;
-                long minTradeSize = Math.max(lmmAllocate, config.lmmMinFill);
-                long tradeSize = Math.min(Math.min(minTradeSize, remainingLmmQuota), resting.displayedQuantity);
-
-                remainingLmmQuota -= tradeSize;
-                context.performMatch(iterator, resting, tradeSize);
-            }
+            directOrder = directOrder.prev;
         }
     }
 

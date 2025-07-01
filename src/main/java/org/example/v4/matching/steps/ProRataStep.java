@@ -3,9 +3,7 @@ package org.example.v4.matching.steps;
 
 import org.example.v4.matching.context.MatchingConfig;
 import org.example.v4.matching.context.MatchingContext;
-import org.example.v4.order.Order;
-
-import java.util.Iterator;
+import org.example.v4.orderbook.DirectOrder;
 
 public class ProRataStep extends BaseMatchingStep {
 
@@ -13,20 +11,19 @@ public class ProRataStep extends BaseMatchingStep {
     public void performAllocation(MatchingContext context, MatchingConfig config) {
         long bucketVolume = context.bucketRemaining;
         long remainingSize = context.incoming.remainingQuantity;
-        Iterator<Order> iterator = context.priceLevel.orders.iterator();
 
-        while (iterator.hasNext() && context.incoming.remainingQuantity > 0) {
-            Order resting = iterator.next();
-            if (checkSelfMatching(context, resting, iterator)) {
-                continue;
+        DirectOrder directOrder = context.priceLevel.head;
+        while (directOrder != null && context.incoming.remainingQuantity > 0) {
+            if (checkSelfMatching(context, directOrder)) {
+                long proRataPass = directOrder.order.displayedQuantity * remainingSize / bucketVolume;
+                long tradeSize = Math.min(proRataPass, context.incoming.remainingQuantity);
+
+                if(tradeSize >= config.proRataMin) {
+                    context.performMatch(directOrder, tradeSize);
+                }
             }
 
-            long proRataPass = resting.displayedQuantity * remainingSize / bucketVolume;
-            long tradeSize = Math.min(proRataPass, context.incoming.remainingQuantity);
-
-            if(tradeSize >= config.proRataMin) {
-                context.performMatch(iterator, resting, tradeSize);
-            }
+            directOrder = directOrder.prev;
         }
     }
 

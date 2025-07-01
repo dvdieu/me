@@ -1,6 +1,7 @@
 package org.example.v4.matching.context;
 
 import org.example.v4.order.Order;
+import org.example.v4.orderbook.DirectOrder;
 import org.example.v4.orderbook.PriceLevel;
 
 import java.util.ArrayList;
@@ -31,18 +32,18 @@ public class MatchingContext {
     public void updatePriceLevel(PriceLevel priceLevel) {
         this.priceLevel = priceLevel;
         this.refilledOrders.clear();
-        this.bucketRemaining = priceLevel.orders.stream()
-                .filter(o -> !incoming.isSelfMatch(o))
-                .mapToLong(o -> o.displayedQuantity).sum();
+        this.bucketRemaining = priceLevel.orderStream()
+                .filter(o -> !incoming.isSelfMatch(o.order))
+                .mapToLong(o -> o.order.displayedQuantity).sum();
     }
 
 
-    public void performMatch(Iterator<Order> iterator, Order resting, long tradeSize) {
+    public void performMatch(DirectOrder resting, long tradeSize) {
         this.bucketRemaining -= tradeSize;
-        matchingCallback.performMatch(incoming, iterator, resting, tradeSize);
+        matchingCallback.performMatch(incoming, resting, tradeSize);
 
-        if(resting.displayedQuantity == 0) {
-            Order icebergChild = resting.createIcebergChild();
+        if(resting.order.displayedQuantity == 0) {
+            Order icebergChild = resting.order.createIcebergChild();
             if(icebergChild != null) {
                 refilledOrders.add(icebergChild);
             }

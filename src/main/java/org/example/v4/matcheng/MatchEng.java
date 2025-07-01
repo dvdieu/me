@@ -10,6 +10,7 @@ import org.example.v4.order.Order;
 import org.example.v4.order.OrderSide;
 import org.example.v4.order.OrderType;
 import org.example.v4.order.TimeInForce;
+import org.example.v4.orderbook.DirectOrder;
 import org.example.v4.orderbook.OrderBook;
 import org.example.v4.orderbook.PriceLevel;
 import org.example.v4.orderbook.StopBook;
@@ -22,7 +23,7 @@ public class MatchEng {
     private final OrderBook orderBook = new OrderBook();
     private final StopBook stopBook = new StopBook();
     private final Deque<Order> commandQueue = new LinkedList<>();
-    private final Map<Long, Order> orders = new HashMap<>();
+    private final Map<Long, DirectOrder> orders = new HashMap<>();
     private final MatchingContext matchingContext = new MatchingContext(this::performMatch);
 
     public MatchEng() {
@@ -80,19 +81,20 @@ public class MatchEng {
     }
 
     public Order cancelOrder(long orderId) {
-        Order order = orders.remove(orderId);
-        if(order == null) {
+        DirectOrder directOrder = orders.remove(orderId);
+        if(directOrder == null) {
             return null;
         }
 
+        Order order = directOrder.order;
         System.out.println("--------------------------------------------------------");
         System.out.println("Cancel order: " + order);
 
         if(order.type == OrderType.LIMIT || order.type == OrderType.MARKET) {
-            orderBook.removeOrder(order);
+            orderBook.removeOrder(directOrder);
             order.matcherTradeEvents.add(MatcherTradeEvent.createReduceEvent(order.remainingQuantity));
         } else {
-            stopBook.removeOrder(order);
+            stopBook.removeOrder(directOrder);
         }
 
         logOrderBookState();
@@ -100,7 +102,8 @@ public class MatchEng {
     }
 
     public Order getOrderById(long orderId) {
-        return orders.get(orderId);
+        DirectOrder directOrder = orders.get(orderId);
+        return directOrder == null ? null : directOrder.order;
     }
 
     private void processIncomingOrder(Order incoming) {
@@ -128,8 +131,8 @@ public class MatchEng {
 
         if(incoming.remainingQuantity > 0) {
             if(incoming.timeInForce == TimeInForce.GTC) {
-                orderBook.addOrder(incoming);
-                orders.put(incoming.id, incoming);
+                DirectOrder directOrder = orderBook.addOrder(incoming);
+                orders.put(incoming.id, directOrder);
                 System.out.println("-> Partially filled, " + incoming.remainingQuantity + " remaining added to book as resting order");
             } else {
                 incoming.matcherTradeEvents.addFirst(MatcherTradeEvent.createRejectEvent(incoming.remainingQuantity));
@@ -155,9 +158,9 @@ public class MatchEng {
                 break;
             }
 
-            available += entry.getValue().orders.stream()
-                    .filter(e -> !order.isSelfMatch(e))
-                    .mapToLong(e -> e.remainingQuantity).sum();
+            available += entry.getValue().orderStream()
+                    .filter(e -> !order.isSelfMatch(e.order))
+                    .mapToLong(e -> e.order.remainingQuantity).sum();
 
             available += stopBook.calculateLiquidity(order, prevPrice, price);
 
@@ -266,7 +269,8 @@ public class MatchEng {
         }
     }
 
-    private void performMatch(Order incoming, Iterator<Order> restingIterator, Order resting, long tradeSize) {
+    private void performMatch(Order incoming, DirectOrder restingDirect, long tradeSize) {
+        Order resting = restingDirect.order;
         lastTradePrice = resting.price;
         incoming.matching(resting, tradeSize);
         System.out.printf("Trade: %s (Maker) %d vs %s (Taker) %d @%d => %d\n",
@@ -275,7 +279,7 @@ public class MatchEng {
         incoming.matcherTradeEvents.add(MatcherTradeEvent.createTradeEvent(resting.id, resting.price, tradeSize));
 
         if(resting.displayedQuantity == 0) {
-            restingIterator.remove();
+            restingDirect.remove();
             orders.remove(resting.id);
         }
     }

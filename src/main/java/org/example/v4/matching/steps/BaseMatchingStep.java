@@ -4,6 +4,7 @@ package org.example.v4.matching.steps;
 import org.example.v4.matching.context.MatchingConfig;
 import org.example.v4.matching.context.MatchingContext;
 import org.example.v4.order.Order;
+import org.example.v4.orderbook.DirectOrder;
 
 import java.util.Iterator;
 
@@ -41,13 +42,13 @@ public abstract class BaseMatchingStep implements MatchingStep {
         return !context.priceLevel.isEmpty() && context.incoming.remainingQuantity > 0;
     }
 
-    protected boolean checkSelfMatching(MatchingContext context, Order resting, Iterator<Order> iterator) {
-        if(context.incoming.isSelfMatch(resting)) {
-            iterator.remove();
-            context.selfMatchOrders.add(resting);
-            return true;
+    protected boolean checkSelfMatching(MatchingContext context, DirectOrder resting) {
+        if(context.incoming.isSelfMatch(resting.order)) {
+            resting.remove();
+            context.selfMatchOrders.add(resting.order);
+            return false;
         }
 
-        return false;
+        return true;
     }
 }

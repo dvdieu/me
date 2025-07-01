@@ -31,9 +31,9 @@ public class OrderBook {
     }
 
 
-    public void addOrder(Order order) {
+    public DirectOrder addOrder(Order order) {
         PriceLevel level = getOrCreateLevel(order.side, order.price);
-        level.addOrder(order);
+        return level.addOrder(order);
     }
 
     public void removeLevel(OrderSide side, long price) {
@@ -41,14 +41,11 @@ public class OrderBook {
         levels.remove(price);
     }
 
-    public void removeOrder(Order order) {
-        TreeMap<Long, PriceLevel> levels = getLevels(order.side);
-        PriceLevel priceLevel = levels.get(order.price);
-        if(priceLevel != null) {
-            priceLevel.orders.remove(order);
-            if(priceLevel.orders.isEmpty()) {
-                levels.remove(order.price);
-            }
+    public void removeOrder(DirectOrder order) {
+        order.remove();
+
+        if(order.priceLevel.isEmpty()) {
+            getLevels(order.order.side).remove(order.order.price);
         }
     }
 
@@ -76,8 +73,8 @@ public class OrderBook {
 
 
     private void logPriceLevel(PriceLevel level) {
-        long quantity = level.orders.stream().mapToLong(e -> e.remainingQuantity).sum();
-        boolean icebergAtLevel = level.orders.stream().anyMatch(e -> e.isIceberg);
+        long quantity = level.orderStream().mapToLong(e -> e.order.remainingQuantity).sum();
+        boolean icebergAtLevel = level.orderStream().anyMatch(e -> e.order.isIceberg);
         System.out.printf("%d(%d%s) \t", level.price, quantity, icebergAtLevel ? " (iceberg)" : "");
     }
 
@@ -95,8 +92,8 @@ public class OrderBook {
         sellLevels.forEach((p, bucket) -> {
             final int i = data.askSize++;
             data.askPrices[i] = bucket.price;
-            data.askVolumes[i] = bucket.orders.stream().mapToLong(e -> e.remainingQuantity).sum();
-            data.askOrders[i] = bucket.orders.size();
+            data.askVolumes[i] = bucket.orderStream().mapToLong(e -> e.order.remainingQuantity).sum();
+            data.askOrders[i] = bucket.orderStream().count();
         });
     }
 
@@ -105,8 +102,8 @@ public class OrderBook {
         buyLevels.forEach((p, bucket) -> {
             final int i = data.bidSize++;
             data.bidPrices[i] = bucket.price;
-            data.bidVolumes[i] = bucket.orders.stream().mapToLong(e -> e.remainingQuantity).sum();
-            data.bidOrders[i] = bucket.orders.size();
+            data.bidVolumes[i] = bucket.orderStream().mapToLong(e -> e.order.remainingQuantity).sum();
+            data.bidOrders[i] = bucket.orderStream().count();
         });
     }
 }
