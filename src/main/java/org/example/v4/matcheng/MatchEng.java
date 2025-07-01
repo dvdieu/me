@@ -23,7 +23,7 @@ public class MatchEng {
     private final StopBook stopBook = new StopBook();
     private final Deque<Order> commandQueue = new LinkedList<>();
     private final Map<Long, Order> orders = new HashMap<>();
-    private final MatchingContext matchingContext = new MatchingContext(order -> orders.remove(order.id));
+    private final MatchingContext matchingContext = new MatchingContext(this::performMatch);
 
     public MatchEng() {
         this(MatchingStrategy.FIFO);
@@ -184,10 +184,6 @@ public class MatchEng {
             matchingContext.updatePriceLevel(priceLevel);
             matchingHandler.tryMatchInstantly(matchingContext);
 
-            if(matchingContext.lastTradePrice != 0) {
-                lastTradePrice = matchingContext.lastTradePrice;
-            }
-
             for (Order refilledOrder : matchingContext.refilledOrders) {
                 orderBook.addOrder(refilledOrder);
                 System.out.printf("-> Iceberg order %d refilled [displayed=%d, hidden=%d] and placed at end of queue\n", refilledOrder.id, refilledOrder.displayedQuantity, refilledOrder.remainingQuantity);
@@ -230,7 +226,7 @@ public class MatchEng {
                                 (stopOrder.side == OrderSide.BUY && stopOrder.price >= lastPrice);
 
                 if (shouldMatch) {
-                    matchDirect(incoming, stopOrder);
+                    matchDirectOrderInStopBook(incoming, stopOrder);
                 } else {
                     orderBook.addOrder(stopOrder);
                     System.out.println("Add to order book");
@@ -239,7 +235,7 @@ public class MatchEng {
         }
     }
 
-    private void matchDirect(Order incoming, Order stopOrder) {
+    private void matchDirectOrderInStopBook(Order incoming, Order stopOrder) {
         if(incoming.remainingQuantity == 0 || incoming.isSelfMatch(stopOrder)) {
             commandQueue.add(stopOrder);
             System.out.println("Add to command queue");
@@ -264,6 +260,28 @@ public class MatchEng {
         stopOrder.correctOverfilledIcebergDisplay();
         if(stopOrder.remainingQuantity > 0) {
             commandQueue.add(stopOrder);
+        }
+    }
+
+    private void performMatch(MatchingContext context, Iterator<Order> restingIterator, Order resting, long tradeSize) {
+        Order incoming = context.incoming;
+
+        lastTradePrice = resting.price;
+        incoming.matching(resting, tradeSize);
+        System.out.printf("Trade: %s (Maker) %d vs %s (Taker) %d @%d => %d\n",
+                resting.side, resting.id, incoming.side, incoming.id, resting.price, tradeSize);
+
+        incoming.matcherTradeEvents.add(MatcherTradeEvent.createTradeEvent(resting.id, resting.price, tradeSize));
+
+        if(resting.displayedQuantity == 0) {
+            restingIterator.remove();
+
+            Order icebergChild = resting.createIcebergChild();
+            if(icebergChild != null) {
+                context.refilledOrders.add(icebergChild);
+            }
+
+            orders.remove(resting.id);
         }
     }
 
