@@ -123,7 +123,7 @@ public class MatchEng {
             }
         }
 
-        matchOrder(incoming);
+        tryMatchInstantly(incoming);
         incoming.correctOverfilledIcebergDisplay();
 
         if(incoming.remainingQuantity > 0) {
@@ -168,7 +168,7 @@ public class MatchEng {
     }
 
 
-    private void matchOrder(Order incoming) {
+    private void tryMatchInstantly(Order incoming) {
         matchingContext.initContext(incoming);
 
         OrderSide sideOpposite = incoming.side.getOpposite();
