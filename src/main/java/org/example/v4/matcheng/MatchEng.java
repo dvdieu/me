@@ -214,6 +214,7 @@ public class MatchEng {
 
                 if (shouldAddToCommandQueue) {
                     commandQueue.add(stopOrder);
+                    orders.remove(stopOrder.id);
                     System.out.println("Add to command queue");
                 } else {
                     orderBook.addOrder(stopOrder);
@@ -260,6 +261,8 @@ public class MatchEng {
         stopOrder.correctOverfilledIcebergDisplay();
         if(stopOrder.remainingQuantity > 0) {
             commandQueue.add(stopOrder);
+        } else {
+            orders.remove(stopOrder.id);
         }
     }
 
