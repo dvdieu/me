@@ -74,8 +74,9 @@ public class OrderBook {
 
     private void logPriceLevel(PriceLevel level) {
         long quantity = level.orderStream().mapToLong(e -> e.order.remainingQuantity).sum();
+        long count = level.orderStream().count();
         boolean icebergAtLevel = level.orderStream().anyMatch(e -> e.order.isIceberg);
-        System.out.printf("%d(%d%s) \t", level.price, quantity, icebergAtLevel ? " (iceberg)" : "");
+        System.out.printf("%d(%d,%d%s) \t", level.price, quantity, count, icebergAtLevel ? " (iceberg)" : "");
     }
 
     public L2MarketData getL2MarketDataSnapshot() {
