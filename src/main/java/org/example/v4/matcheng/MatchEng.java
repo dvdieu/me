@@ -213,7 +213,6 @@ public class MatchEng {
         for (Order stopOrder : triggeredStopOrders) {
             System.out.printf("-> Triggered: %s %s (id=%d) at trigger price %d" + (stopOrder.type == OrderType.STOP_LIMIT? ", limitPrice = " + stopOrder.price : "") + "\n", stopOrder.side, stopOrder.type, stopOrder.id, stopOrder.stopPrice);
 
-            orders.remove(stopOrder.id);
             stopOrder.convertToExecutableOrderType();
 
             if(incoming.side == stopOrder.side) {
@@ -222,6 +221,7 @@ public class MatchEng {
                         (incoming.side == OrderSide.SELL && stopOrder.price <= lastPrice);
 
                 if (shouldAddToCommandQueue) {
+                    orders.remove(stopOrder.id);
                     commandQueue.add(stopOrder);
                     System.out.println("Add to command queue");
                 } else {
@@ -236,6 +236,7 @@ public class MatchEng {
                                 (stopOrder.side == OrderSide.BUY && stopOrder.price >= lastPrice);
 
                 if (shouldMatch) {
+                    orders.remove(stopOrder.id);
                     matchDirectOrderInStopBook(incoming, stopOrder);
                 } else {
                     DirectOrder directOrder = orderBook.addOrder(stopOrder);
