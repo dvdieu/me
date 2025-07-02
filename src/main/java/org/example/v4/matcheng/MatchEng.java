@@ -247,20 +247,12 @@ public class MatchEng {
     }
 
     private void matchDirectOrderInStopBook(Order incoming, Order stopOrder) {
-        if(incoming.remainingQuantity == 0 || incoming.isSelfMatch(stopOrder)) {
+        if(incoming.remainingQuantity == 0 || incoming.isSelfMatch(stopOrder) ||
+                (stopOrder.timeInForce == TimeInForce.FOK && incoming.remainingQuantity < stopOrder.remainingQuantity)) {
             commandQueue.add(stopOrder);
             orders.remove(stopOrder.id);
             System.out.println("Add to command queue");
             return;
-        }
-
-        if(stopOrder.timeInForce == TimeInForce.FOK) {
-            if(incoming.remainingQuantity < stopOrder.remainingQuantity) {
-                commandQueue.add(stopOrder);
-                orders.remove(stopOrder.id);
-                System.out.println("Add to command queue");
-                return;
-            }
         }
 
         long tradeSize = Math.min(incoming.remainingQuantity, stopOrder.remainingQuantity);
