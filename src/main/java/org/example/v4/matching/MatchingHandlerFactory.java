@@ -38,8 +38,8 @@ public class MatchingHandlerFactory {
     private static MatchingConfig matchingConfig() {
         MatchingConfig config = new MatchingConfig();
         config.lmmPerThousands = Map.ofEntries(
-                Map.entry(412, 50),
-                Map.entry(413, 60)
+                Map.entry(412L, 50),
+                Map.entry(413L, 60)
         );
 
         return config;

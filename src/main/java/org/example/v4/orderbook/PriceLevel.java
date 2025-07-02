@@ -14,8 +14,8 @@ public class PriceLevel {
     public long numOrders;
     public long remainingQuantity;
     public long displayedQuantity;
-    public Map<Integer, Long> remainQuantityByUsers = new HashMap<>();
-    public Map<Integer, Long> displayedQuantityByUsers = new HashMap<>();
+    public Map<Long, Long> remainQuantityByUsers = new HashMap<>();
+    public Map<Long, Long> displayedQuantityByUsers = new HashMap<>();
 
     public PriceLevel(long price) {
         this.price = price;
@@ -46,11 +46,11 @@ public class PriceLevel {
         return head == null;
     }
 
-    public long getRemainingQuantityWithoutUser(int userId) {
+    public long getRemainingQuantityWithoutUser(long userId) {
         return remainingQuantity - remainQuantityByUsers.getOrDefault(userId, 0L);
     }
 
-    public long getDisplayedQuantityWithoutUser(int userId) {
+    public long getDisplayedQuantityWithoutUser(long userId) {
         return displayedQuantity - displayedQuantityByUsers.getOrDefault(userId, 0L);
     }
 
@@ -76,7 +76,7 @@ public class PriceLevel {
         }
     }
 
-    public void removeTradeVolume(int userId, long tradeSize) {
+    public void removeTradeVolume(long userId, long tradeSize) {
         remainingQuantity -= tradeSize;
         displayedQuantity -= tradeSize;
 

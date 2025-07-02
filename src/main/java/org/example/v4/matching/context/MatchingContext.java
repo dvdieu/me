@@ -1,5 +1,6 @@
 package org.example.v4.matching.context;
 
+import org.example.v4.common.command.OrderCommand;
 import org.example.v4.order.Order;
 import org.example.v4.orderbook.DirectOrder;
 import org.example.v4.orderbook.PriceLevel;
@@ -12,6 +13,7 @@ public class MatchingContext {
 
     public final MatchingCallback matchingCallback;
 
+    public OrderCommand cmd;
     public Order incoming;
     public PriceLevel priceLevel;
     public long bucketRemaining;
@@ -24,7 +26,8 @@ public class MatchingContext {
     }
 
 
-    public void initContext(Order incoming) {
+    public void initContext(OrderCommand cmd, Order incoming) {
+        this.cmd = cmd;
         this.incoming = incoming;
         this.selfMatchOrders.clear();
     }
@@ -38,7 +41,7 @@ public class MatchingContext {
 
     public void performMatch(DirectOrder resting, long tradeSize) {
         this.bucketRemaining -= tradeSize;
-        matchingCallback.performMatch(incoming, resting, tradeSize);
+        matchingCallback.performMatch(cmd, incoming, resting, tradeSize);
 
         if(resting.order.displayedQuantity == 0) {
             Order icebergChild = resting.order.createIcebergChild();

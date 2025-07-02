@@ -1,34 +1,48 @@
 package org.example.v4.common;
 
 
+import org.example.v4.common.command.OrderCommand;
+import org.example.v4.order.Order;
+
 public final class MatcherTradeEvent {
 
     public MatcherEventType eventType;
-    public long matchedOrderId;
-    public long matchedPrice;
+    public long takerOrderId;
+    public long makerOrderId;
+    public long price;
     public long size;
+    public boolean takerCompleted;
+    public boolean makerCompleted;
 
-
-    public static MatcherTradeEvent createTradeEvent(long matchedOrderId, long matchedPrice, long size) {
+    public static MatcherTradeEvent createTradeEvent(Order taker, Order maker, long price, long size) {
         MatcherTradeEvent event = new MatcherTradeEvent();
         event.eventType = MatcherEventType.TRADE;
-        event.matchedOrderId = matchedOrderId;
-        event.matchedPrice = matchedPrice;
+        event.takerOrderId = taker.id;
+        event.makerOrderId = maker.id;
+        event.price = price;
         event.size = size;
+        event.takerCompleted = taker.remainingQuantity == 0;
+        event.makerCompleted = maker.remainingQuantity == 0;
         return event;
     }
 
-    public static MatcherTradeEvent createRejectEvent(long size) {
+    public static MatcherTradeEvent createRejectEvent(Order taker, long rejectedSize) {
         MatcherTradeEvent event = new MatcherTradeEvent();
         event.eventType = MatcherEventType.REJECT;
-        event.size = size;
+        event.takerOrderId = taker.id;
+        event.price = taker.price;
+        event.size = rejectedSize;
+        event.takerCompleted = true;
         return event;
     }
 
-    public static MatcherTradeEvent createReduceEvent(long size) {
+    public static MatcherTradeEvent createReduceEvent(Order taker, long reduceSize, boolean takerCompleted) {
         MatcherTradeEvent event = new MatcherTradeEvent();
         event.eventType = MatcherEventType.REDUCE;
-        event.size = size;
+        event.takerOrderId = taker.id;
+        event.price = taker.price;
+        event.size = reduceSize;
+        event.takerCompleted = takerCompleted;
         return event;
     }
 

@@ -9,6 +9,6 @@ public class MatchingConfig {
     public int proRataMin = 1;
     public int lmmMinFill = 1;
     public int totalLmmPerThousand = 400;
-    public Map<Integer, Integer> lmmPerThousands = Collections.emptyMap();
+    public Map<Long, Integer> lmmPerThousands = Collections.emptyMap();
 
 }
