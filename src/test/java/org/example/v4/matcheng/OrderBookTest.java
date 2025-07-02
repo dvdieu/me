@@ -32,20 +32,20 @@ public class OrderBookTest extends BaseMatchEngTest {
 
     @BeforeEach
     public void before() {
-        matchEng.placeOrder(Order.createStandardOrder(1, UID_1, SELL, LIMIT, GTC, 81600L, 100L));
-        matchEng.placeOrder(Order.createStandardOrder(2, UID_1, SELL, LIMIT, GTC, 81599L, 50L));
-        matchEng.placeOrder(Order.createStandardOrder(3, UID_1, SELL, LIMIT, GTC, 81599L, 25L));
-        matchEng.placeOrder(Order.createStandardOrder(8, UID_1, SELL, LIMIT, GTC, 201000L, 28L));
-        matchEng.placeOrder(Order.createStandardOrder(9, UID_1, SELL, LIMIT, GTC, 201000L, 32L));
-        matchEng.placeOrder(Order.createStandardOrder(10, UID_1, SELL, LIMIT, GTC, 200954L, 10L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, UID_1, SELL, LIMIT, GTC, 81600L, 100L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, UID_1, SELL, LIMIT, GTC, 81599L, 50L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(3, UID_1, SELL, LIMIT, GTC, 81599L, 25L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(8, UID_1, SELL, LIMIT, GTC, 201000L, 28L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(9, UID_1, SELL, LIMIT, GTC, 201000L, 32L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(10, UID_1, SELL, LIMIT, GTC, 200954L, 10L));
 
-        matchEng.placeOrder(Order.createStandardOrder(4, UID_1, BUY, LIMIT, GTC, 81593L, 40L));
-        matchEng.placeOrder(Order.createStandardOrder(5, UID_1, BUY, LIMIT, GTC, 81590L, 20L));
-        matchEng.placeOrder(Order.createStandardOrder(6, UID_1, BUY, LIMIT, GTC, 81590L, 1L));
-        matchEng.placeOrder(Order.createStandardOrder(7, UID_1, BUY, LIMIT, GTC, 81200L, 20L));
-        matchEng.placeOrder(Order.createStandardOrder(11, UID_1, BUY, LIMIT, GTC, 10000L, 12L));
-        matchEng.placeOrder(Order.createStandardOrder(12, UID_1, BUY, LIMIT, GTC, 10000L, 1L));
-        matchEng.placeOrder(Order.createStandardOrder(13, UID_1, BUY, LIMIT, GTC, 9136L, 2L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(4, UID_1, BUY, LIMIT, GTC, 81593L, 40L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(5, UID_1, BUY, LIMIT, GTC, 81590L, 20L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(6, UID_1, BUY, LIMIT, GTC, 81590L, 1L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(7, UID_1, BUY, LIMIT, GTC, 81200L, 20L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(11, UID_1, BUY, LIMIT, GTC, 10000L, 12L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(12, UID_1, BUY, LIMIT, GTC, 10000L, 1L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(13, UID_1, BUY, LIMIT, GTC, 9136L, 2L));
 
         expectedState = new L2MarketDataHelper(
                 new L2MarketData(
@@ -76,11 +76,11 @@ public class OrderBookTest extends BaseMatchEngTest {
 
         // match all asks
         long askSum = Arrays.stream(snapshot.askVolumes).sum();
-        matchEng.placeOrder(Order.createStandardOrder(100000000000L, -1, BUY, MARKET, IOC, 0, askSum));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(100000000000L, -1, BUY, MARKET, IOC, 0, askSum));
 
         // match all bids
         long bidSum = Arrays.stream(snapshot.bidVolumes).sum();
-        matchEng.placeOrder(Order.createStandardOrder(100000000000L, -2, SELL, MARKET, IOC, 0, bidSum));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(100000000000L, -2, SELL, MARKET, IOC, 0, bidSum));
 
         assertThat(matchEng.getL2MarketData().askSize, is(0));
         assertThat(matchEng.getL2MarketData().bidSize, is(0));
@@ -93,19 +93,19 @@ public class OrderBookTest extends BaseMatchEngTest {
      */
     @Test
     public void shouldAddGtcOrders() {
-        matchEng.placeOrder(Order.createStandardOrder(93, UID_1, SELL, LIMIT, GTC, 81598, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(93, UID_1, SELL, LIMIT, GTC, 81598, 1));
         expectedState.insertAsk(0, 81598, 1);
 
-        matchEng.placeOrder(Order.createStandardOrder(94, UID_1, BUY, LIMIT, GTC, 81594, 9_000_000_000L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(94, UID_1, BUY, LIMIT, GTC, 81594, 9_000_000_000L));
         expectedState.insertBid(0, 81594, 9_000_000_000L);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         assertEquals(expectedState.build(), snapshot);
 
-        matchEng.placeOrder(Order.createStandardOrder(95, UID_1, SELL, LIMIT, GTC, 130000, 13_000_000_000L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(95, UID_1, SELL, LIMIT, GTC, 130000, 13_000_000_000L));
         expectedState.insertAsk(3, 130000, 13_000_000_000L);
 
-        matchEng.placeOrder(Order.createStandardOrder(96, UID_1, BUY, LIMIT, GTC, 1000, 4));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(96, UID_1, BUY, LIMIT, GTC, 1000, 4));
         expectedState.insertBid(6, 1000, 4);
 
         snapshot = matchEng.getL2MarketData();
@@ -118,7 +118,7 @@ public class OrderBookTest extends BaseMatchEngTest {
     @Test
     public void shouldIgnoredDuplicateOrder() {
         Order incoming = Order.createStandardOrder(1, UID_1, SELL, LIMIT, GTC, 81600, 100);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         assertThat(incoming.matcherTradeEvents.size(), is(1));
     }
@@ -126,7 +126,7 @@ public class OrderBookTest extends BaseMatchEngTest {
     @Test
     public void shouldRemoveBidOrder() {
         // remove bid order
-        Order order = matchEng.cancelOrder(5);
+        Order order = cancelOrderAndValidate(matchEng, 5);
 
         expectedState.setBidVolume(1, 1).decrementBidOrdersNum(1);
         assertEquals(expectedState.build(), matchEng.getL2MarketData());
@@ -138,7 +138,7 @@ public class OrderBookTest extends BaseMatchEngTest {
     @Test
     public void shouldRemoveAskOrder() {
         // remove ask order
-        Order order = matchEng.cancelOrder(2);
+        Order order = cancelOrderAndValidate(matchEng, 2);
 
         expectedState.setAskVolume(0, 25).decrementAskOrdersNum(0);
         assertEquals(expectedState.build(), matchEng.getL2MarketData());
@@ -149,11 +149,11 @@ public class OrderBookTest extends BaseMatchEngTest {
 
     @Test
     public void shouldRemoveOrderAndEmptyBucket() {
-        Order order2 = matchEng.cancelOrder(2);
+        Order order2 = cancelOrderAndValidate(matchEng, 2);
         assertThat(order2.matcherTradeEvents.size(), is(1));
         checkEventReduce(order2, 0, 50L);
 
-        Order order3 = matchEng.cancelOrder(3);
+        Order order3 = cancelOrderAndValidate(matchEng, 3);
         assertThat(order3.matcherTradeEvents.size(), is(1));
         checkEventReduce(order3, 0, 25L);
 
@@ -166,7 +166,7 @@ public class OrderBookTest extends BaseMatchEngTest {
     public void shouldMatchIocOrderPartialBBO() {
         // size=10
         Order incoming = Order.createStandardOrder(123, UID_2, SELL, MARKET, IOC, 1, 10);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         // best bid matched
@@ -181,7 +181,7 @@ public class OrderBookTest extends BaseMatchEngTest {
     public void shouldMatchIocOrderWithTwoLimitOrdersPartial() {
         // size=41
         Order incoming = Order.createStandardOrder(123, UID_2, SELL, MARKET, IOC, 1, 41);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         // bids matched
@@ -201,7 +201,7 @@ public class OrderBookTest extends BaseMatchEngTest {
     public void shouldMatchIocOrderFullLiquidity() {
         // size=175
         Order incoming = Order.createStandardOrder(123, UID_2, BUY, MARKET, IOC, MAX_PRICE, 175);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         // all asks matched
@@ -223,7 +223,7 @@ public class OrderBookTest extends BaseMatchEngTest {
     public void shouldMatchIocOrderWithRejection() {
         // size=270
         Order incoming = Order.createStandardOrder(123, UID_2, BUY, MARKET, IOC, MAX_PRICE, 270);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         // all asks matched
@@ -242,7 +242,7 @@ public class OrderBookTest extends BaseMatchEngTest {
     public void shouldFullyMatchMarketableGtcOrder() {
         // size=1
         Order incoming = Order.createStandardOrder(123, UID_2, BUY, LIMIT, GTC, 81599, 1);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         // best ask partially matched
@@ -257,7 +257,7 @@ public class OrderBookTest extends BaseMatchEngTest {
     public void shouldPartiallyMatchMarketableGtcOrderAndPlace() {
         // size=77
         Order incoming = Order.createStandardOrder(123, UID_2, BUY, LIMIT, GTC, 81599, 77);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         // best asks fully matched, limit bid order placed
@@ -274,7 +274,7 @@ public class OrderBookTest extends BaseMatchEngTest {
     public void shouldFullyMatchMarketableGtcOrder2Prices() {
         // size=77
         Order incoming = Order.createStandardOrder(123, UID_2, BUY, LIMIT, GTC, 81600, 77);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         // best asks fully matched, limit bid order placed
@@ -292,7 +292,7 @@ public class OrderBookTest extends BaseMatchEngTest {
     public void shouldFullyMatchMarketableGtcOrderWithAllLiquidity() {
         // size=1000
         Order incoming = Order.createStandardOrder(123, UID_2, BUY, LIMIT, GTC, 220000, 1000);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         // best asks fully matched, limit bid order placed

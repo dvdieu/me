@@ -19,20 +19,20 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
     void shouldMatchBuyGTCAndTriggerStopOrder() {
         MatchEng matchEng = new MatchEng();
 
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 94, 1));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 94, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
 
-        matchEng.placeOrder(Order.createStopOrder(3, 1, SELL, STOP_MARKET, IOC, 95, 0, 5));
-        matchEng.placeOrder(Order.createStopOrder(4, 1, SELL, STOP_LIMIT, GTC, 95, 95, 5));
-        matchEng.placeOrder(Order.createStopOrder(5, 1, SELL, STOP_LIMIT, GTC, 95, 96, 5));
-        matchEng.placeOrder(Order.createStopOrder(6, 1, SELL, STOP_LIMIT, GTC, 95, 97, 5));
-        matchEng.placeOrder(Order.createStopOrder(7, 1, BUY, STOP_LIMIT, GTC, 95, 90, 10));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(3, 1, SELL, STOP_MARKET, IOC, 95, 0, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(4, 1, SELL, STOP_LIMIT, GTC, 95, 95, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(5, 1, SELL, STOP_LIMIT, GTC, 95, 96, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(6, 1, SELL, STOP_LIMIT, GTC, 95, 97, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(7, 1, BUY, STOP_LIMIT, GTC, 95, 90, 10));
 
         Order triggerAndAddToCommandQueueOrder = Order.createStopOrder(8, 2, BUY, STOP_LIMIT, GTC, 95, 100, 1);
-        matchEng.placeOrder(triggerAndAddToCommandQueueOrder);
+        placeOrderAndValidate(matchEng, triggerAndAddToCommandQueueOrder);
 
         Order incoming = Order.createStandardOrder(100, 2, BUY, LIMIT, GTC, 96, 20);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -62,20 +62,20 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
     void shouldMatchBuyIOCAndTriggerStopOrder() {
         MatchEng matchEng = new MatchEng();
 
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 94, 1));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 94, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
 
-        matchEng.placeOrder(Order.createStopOrder(3, 1, SELL, STOP_MARKET, IOC, 95, 0, 5));
-        matchEng.placeOrder(Order.createStopOrder(4, 1, SELL, STOP_LIMIT, GTC, 95, 95, 5));
-        matchEng.placeOrder(Order.createStopOrder(5, 1, SELL, STOP_LIMIT, GTC, 95, 96, 5));
-        matchEng.placeOrder(Order.createStopOrder(6, 1, SELL, STOP_LIMIT, GTC, 95, 97, 5));
-        matchEng.placeOrder(Order.createStopOrder(7, 1, BUY, STOP_LIMIT, GTC, 95, 90, 10));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(3, 1, SELL, STOP_MARKET, IOC, 95, 0, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(4, 1, SELL, STOP_LIMIT, GTC, 95, 95, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(5, 1, SELL, STOP_LIMIT, GTC, 95, 96, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(6, 1, SELL, STOP_LIMIT, GTC, 95, 97, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(7, 1, BUY, STOP_LIMIT, GTC, 95, 90, 10));
 
         Order triggerAndAddToCommandQueueOrder = Order.createStopOrder(8, 2, BUY, STOP_LIMIT, GTC, 95, 100, 1);
-        matchEng.placeOrder(triggerAndAddToCommandQueueOrder);
+        placeOrderAndValidate(matchEng, triggerAndAddToCommandQueueOrder);
 
         Order incoming = Order.createStandardOrder(100, 2, BUY, LIMIT, IOC, 96, 20);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -106,20 +106,20 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
     void shouldMatchSellGTCAndTriggerStopOrder() {
         MatchEng matchEng = new MatchEng();
 
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 106, 1));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 104, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 106, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 104, 1));
 
-        matchEng.placeOrder(Order.createStopOrder(3, 1, BUY, STOP_MARKET, IOC, 105, 0, 5));
-        matchEng.placeOrder(Order.createStopOrder(4, 1, BUY, STOP_LIMIT, GTC, 105, 105, 5));
-        matchEng.placeOrder(Order.createStopOrder(5, 1, BUY, STOP_LIMIT, GTC, 105, 104, 5));
-        matchEng.placeOrder(Order.createStopOrder(6, 1, BUY, STOP_LIMIT, GTC, 105, 103, 5));
-        matchEng.placeOrder(Order.createStopOrder(7, 1, SELL, STOP_LIMIT, GTC, 105, 110, 10));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(3, 1, BUY, STOP_MARKET, IOC, 105, 0, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(4, 1, BUY, STOP_LIMIT, GTC, 105, 105, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(5, 1, BUY, STOP_LIMIT, GTC, 105, 104, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(6, 1, BUY, STOP_LIMIT, GTC, 105, 103, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(7, 1, SELL, STOP_LIMIT, GTC, 105, 110, 10));
 
         Order triggerAndAddToCommandQueueOrder = Order.createStopOrder(8, 2, SELL, STOP_MARKET, GTC, 105, 0, 1);
-        matchEng.placeOrder(triggerAndAddToCommandQueueOrder);
+        placeOrderAndValidate(matchEng, triggerAndAddToCommandQueueOrder);
 
         Order incoming = Order.createStandardOrder(100, 2, SELL, LIMIT, GTC, 104, 20);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -149,20 +149,20 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
     void shouldMatchSellIOCAndTriggerStopOrder() {
         MatchEng matchEng = new MatchEng();
 
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 106, 1));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 104, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 106, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 104, 1));
 
-        matchEng.placeOrder(Order.createStopOrder(3, 1, BUY, STOP_MARKET, IOC, 105, 0, 5));
-        matchEng.placeOrder(Order.createStopOrder(4, 1, BUY, STOP_LIMIT, GTC, 105, 105, 5));
-        matchEng.placeOrder(Order.createStopOrder(5, 1, BUY, STOP_LIMIT, GTC, 105, 104, 5));
-        matchEng.placeOrder(Order.createStopOrder(6, 1, BUY, STOP_LIMIT, GTC, 105, 103, 5));
-        matchEng.placeOrder(Order.createStopOrder(7, 1, SELL, STOP_LIMIT, GTC, 105, 110, 10));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(3, 1, BUY, STOP_MARKET, IOC, 105, 0, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(4, 1, BUY, STOP_LIMIT, GTC, 105, 105, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(5, 1, BUY, STOP_LIMIT, GTC, 105, 104, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(6, 1, BUY, STOP_LIMIT, GTC, 105, 103, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(7, 1, SELL, STOP_LIMIT, GTC, 105, 110, 10));
 
         Order triggerAndAddToCommandQueueOrder = Order.createStopOrder(8, 2, SELL, STOP_MARKET, GTC, 105, 0, 1);
-        matchEng.placeOrder(triggerAndAddToCommandQueueOrder);
+        placeOrderAndValidate(matchEng, triggerAndAddToCommandQueueOrder);
 
         Order incoming = Order.createStandardOrder(100, 2, SELL, LIMIT, IOC, 104, 20);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -193,20 +193,20 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
     void shouldMatchBuyGTCAndTriggerStopIcebergOrder() {
         MatchEng matchEng = new MatchEng();
 
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 94, 1));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 94, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
 
-        matchEng.placeOrder(Order.createStopOrder(3, 1, SELL, STOP_MARKET, IOC, 95, 0, 5));
-        matchEng.placeOrder(Order.createStopIcebergOrder(4, 1, SELL, STOP_LIMIT,95, 95, 1000, 2));
-        matchEng.placeOrder(Order.createStopOrder(5, 1, SELL, STOP_LIMIT, GTC, 95, 96, 5));
-        matchEng.placeOrder(Order.createStopOrder(6, 1, SELL, STOP_LIMIT, GTC, 95, 97, 5));
-        matchEng.placeOrder(Order.createStopOrder(7, 1, BUY, STOP_LIMIT, GTC, 95, 90, 10));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(3, 1, SELL, STOP_MARKET, IOC, 95, 0, 5));
+        placeOrderAndValidate(matchEng, Order.createStopIcebergOrder(4, 1, SELL, STOP_LIMIT,95, 95, 1000, 2));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(5, 1, SELL, STOP_LIMIT, GTC, 95, 96, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(6, 1, SELL, STOP_LIMIT, GTC, 95, 97, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(7, 1, BUY, STOP_LIMIT, GTC, 95, 90, 10));
 
         Order triggerAndAddToCommandQueueOrder = Order.createStopOrder(8, 2, BUY, STOP_LIMIT, GTC, 95, 100, 5);
-        matchEng.placeOrder(triggerAndAddToCommandQueueOrder);
+        placeOrderAndValidate(matchEng, triggerAndAddToCommandQueueOrder);
 
         Order incoming = Order.createStandardOrder(100, 2, BUY, LIMIT, GTC, 96, 20);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -237,12 +237,12 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
     void shouldAddStopOrderToOrderBookWhenLastPriceEqualStopPrice() {
         MatchEng matchEng = new MatchEng();
 
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 94, 1));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
-        matchEng.placeOrder(Order.createStandardOrder(3, 2, BUY, LIMIT, GTC, 94, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 94, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(3, 2, BUY, LIMIT, GTC, 94, 1));
 
         Order incoming = Order.createStopOrder(4, 2, BUY, STOP_LIMIT, GTC, 94, 95, 5);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -264,12 +264,12 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
     void shouldMatchStopOrderImmediatelyWhenLastPriceEqualStopPrice() {
         MatchEng matchEng = new MatchEng();
 
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 94, 1));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
-        matchEng.placeOrder(Order.createStandardOrder(3, 2, BUY, LIMIT, GTC, 94, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 94, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(3, 2, BUY, LIMIT, GTC, 94, 1));
 
         Order incoming = Order.createStopOrder(4, 2, BUY, STOP_LIMIT, GTC, 94, 100, 5);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -291,13 +291,13 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
     @Test
     void shouldMatchFOKFromOrderBookAndStopBook() {
         MatchEng matchEng = new MatchEng();
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 10));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 110, 10));
-        matchEng.placeOrder(Order.createStopOrder(3, 1, BUY, STOP_LIMIT, GTC, 105, 105, 3));
-        matchEng.placeOrder(Order.createStopOrder(4, 1, BUY, STOP_LIMIT, GTC, 100, 100, 3));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 10));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 110, 10));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(3, 1, BUY, STOP_LIMIT, GTC, 105, 105, 3));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(4, 1, BUY, STOP_LIMIT, GTC, 100, 100, 3));
 
         Order incoming = Order.createStandardOrder(10, 2, SELL, MARKET, FOK, 0, 25);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -323,19 +323,19 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
     void shouldTriggerStopBuyFromToLowAndRespectFIFO() {
         MatchEng matchEng = new MatchEng();
 
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 93, 1));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, SELL, LIMIT, GTC, 93, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 96, 1));
 
-        matchEng.placeOrder(Order.createStopOrder(3, 1, SELL, STOP_MARKET, IOC, 94, 0, 5));
-        matchEng.placeOrder(Order.createStopOrder(4, 1, BUY, STOP_LIMIT, GTC, 96, 90, 10));
-        matchEng.placeOrder(Order.createStopOrder(5, 1, SELL, STOP_MARKET, IOC, 95, 0, 5));
-        matchEng.placeOrder(Order.createStopOrder(6, 1, SELL, STOP_LIMIT, GTC, 95, 95, 5));
-        matchEng.placeOrder(Order.createStopOrder(7, 1, SELL, STOP_LIMIT, GTC, 95, 96, 5));
-        matchEng.placeOrder(Order.createStopOrder(8, 1, SELL, STOP_LIMIT, GTC, 95, 97, 5));
-        matchEng.placeOrder(Order.createStopOrder(9, 1, BUY, STOP_LIMIT, GTC, 95, 90, 10));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(3, 1, SELL, STOP_MARKET, IOC, 94, 0, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(4, 1, BUY, STOP_LIMIT, GTC, 96, 90, 10));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(5, 1, SELL, STOP_MARKET, IOC, 95, 0, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(6, 1, SELL, STOP_LIMIT, GTC, 95, 95, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(7, 1, SELL, STOP_LIMIT, GTC, 95, 96, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(8, 1, SELL, STOP_LIMIT, GTC, 95, 97, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(9, 1, BUY, STOP_LIMIT, GTC, 95, 90, 10));
 
         Order incoming = Order.createStandardOrder(100, 2, BUY, LIMIT, GTC, 96, 20);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -364,19 +364,19 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
     void shouldTriggerStopSellFromHighToLowAndRespectFIFO() {
         MatchEng matchEng = new MatchEng();
 
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 93, 1));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 96, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 93, 1));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 96, 1));
 
-        matchEng.placeOrder(Order.createStopOrder(3, 1, BUY, STOP_MARKET, IOC, 94, 0, 5));
-        matchEng.placeOrder(Order.createStopOrder(4, 1, SELL, STOP_LIMIT, GTC, 96, 90, 10));
-        matchEng.placeOrder(Order.createStopOrder(5, 1, BUY, STOP_MARKET, IOC, 95, 0, 5));
-        matchEng.placeOrder(Order.createStopOrder(6, 1, BUY, STOP_LIMIT, GTC, 95, 95, 5));
-        matchEng.placeOrder(Order.createStopOrder(7, 1, BUY, STOP_LIMIT, GTC, 95, 96, 5));
-        matchEng.placeOrder(Order.createStopOrder(8, 1, BUY, STOP_LIMIT, GTC, 95, 97, 5));
-        matchEng.placeOrder(Order.createStopOrder(9, 1, SELL, STOP_LIMIT, GTC, 95, 90, 10));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(3, 1, BUY, STOP_MARKET, IOC, 94, 0, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(4, 1, SELL, STOP_LIMIT, GTC, 96, 90, 10));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(5, 1, BUY, STOP_MARKET, IOC, 95, 0, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(6, 1, BUY, STOP_LIMIT, GTC, 95, 95, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(7, 1, BUY, STOP_LIMIT, GTC, 95, 96, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(8, 1, BUY, STOP_LIMIT, GTC, 95, 97, 5));
+        placeOrderAndValidate(matchEng, Order.createStopOrder(9, 1, SELL, STOP_LIMIT, GTC, 95, 90, 10));
 
         Order incoming = Order.createStandardOrder(100, 2, SELL, LIMIT, GTC, 93, 20);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(

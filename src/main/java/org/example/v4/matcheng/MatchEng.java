@@ -50,7 +50,8 @@ public class MatchEng {
 
         if(order.type == OrderType.STOP_MARKET || order.type == OrderType.STOP_LIMIT) {
             if(order.stopPrice != lastTradePrice) {
-                stopBook.addStopOrder(order);
+                DirectOrder directOrder = stopBook.addStopOrder(order);
+                orders.put(order.id, directOrder);
                 System.out.println("-> Stop order added (waiting for trigger)");
                 logOrderBookState();
                 return;
@@ -188,7 +189,8 @@ public class MatchEng {
             matchingHandler.tryMatchInstantly(matchingContext);
 
             for (Order refilledOrder : matchingContext.refilledOrders) {
-                orderBook.addOrder(refilledOrder);
+                DirectOrder directOrder = orderBook.addOrder(refilledOrder);
+                orders.put(refilledOrder.id, directOrder);
                 System.out.printf("-> Iceberg order %d refilled [displayed=%d, hidden=%d] and placed at end of queue\n", refilledOrder.id, refilledOrder.displayedQuantity, refilledOrder.remainingQuantity);
             }
 
@@ -200,7 +202,10 @@ public class MatchEng {
             priceLevel = orderBook.getBestLevel(sideOpposite);
         }
 
-        matchingContext.selfMatchOrders.forEach(orderBook::addOrder);
+        matchingContext.selfMatchOrders.forEach(order -> {
+            DirectOrder directOrder = orderBook.addOrder(order);
+            orders.put(order.id, directOrder);
+        });
     }
 
     private void triggerStopOrders(Order incoming, long prevPrice, long lastPrice) {
@@ -220,7 +225,8 @@ public class MatchEng {
                     orders.remove(stopOrder.id);
                     System.out.println("Add to command queue");
                 } else {
-                    orderBook.addOrder(stopOrder);
+                    DirectOrder directOrder = orderBook.addOrder(stopOrder);
+                    orders.put(stopOrder.id, directOrder);
                     System.out.println("Add to order book");
                 }
             }
@@ -232,7 +238,8 @@ public class MatchEng {
                 if (shouldMatch) {
                     matchDirectOrderInStopBook(incoming, stopOrder);
                 } else {
-                    orderBook.addOrder(stopOrder);
+                    DirectOrder directOrder = orderBook.addOrder(stopOrder);
+                    orders.put(stopOrder.id, directOrder);
                     System.out.println("Add to order book");
                 }
             }
@@ -242,6 +249,7 @@ public class MatchEng {
     private void matchDirectOrderInStopBook(Order incoming, Order stopOrder) {
         if(incoming.remainingQuantity == 0 || incoming.isSelfMatch(stopOrder)) {
             commandQueue.add(stopOrder);
+            orders.remove(stopOrder.id);
             System.out.println("Add to command queue");
             return;
         }
@@ -249,6 +257,7 @@ public class MatchEng {
         if(stopOrder.timeInForce == TimeInForce.FOK) {
             if(incoming.remainingQuantity < stopOrder.remainingQuantity) {
                 commandQueue.add(stopOrder);
+                orders.remove(stopOrder.id);
                 System.out.println("Add to command queue");
                 return;
             }
@@ -264,9 +273,9 @@ public class MatchEng {
         stopOrder.correctOverfilledIcebergDisplay();
         if(stopOrder.remainingQuantity > 0) {
             commandQueue.add(stopOrder);
-        } else {
-            orders.remove(stopOrder.id);
         }
+
+        orders.remove(stopOrder.id);
     }
 
     private void performMatch(Order incoming, DirectOrder restingDirect, long tradeSize) {
@@ -294,5 +303,157 @@ public class MatchEng {
 
     public L2MarketData getL2MarketData() {
         return orderBook.getL2MarketDataSnapshot();
+    }
+
+
+    public void validateInternalState() {
+        final TreeMap<Long, DirectOrder> ordersInChain = new TreeMap<>();
+        validateChain(OrderSide.SELL, ordersInChain);
+        validateChain(OrderSide.BUY, ordersInChain);
+        validateStopBook(ordersInChain);
+
+        orders.forEach((k, v) -> {
+            if (ordersInChain.remove(k) != v) {
+                thrw("chained orders does not contain orderId=" + k);
+            }
+        });
+
+        if (!ordersInChain.isEmpty()) {
+            thrw("orderIdIndex does not contain each order from chains");
+        }
+    }
+
+    private void validateChain(OrderSide side, TreeMap<Long, DirectOrder> ordersInChain) {
+        TreeMap<Long, PriceLevel> buckets = orderBook.getLevels(side);
+        final TreeMap<Long, PriceLevel> bucketsFoundInChain = new TreeMap<>();
+
+        long lastPrice = -1;
+        for (PriceLevel priceLevel : buckets.values()) {
+            DirectOrder lastOrder = null;
+            DirectOrder order = priceLevel.head;
+
+            if(order == null) {
+                thrw("order is null");
+            }
+            if (order.next != null) {
+                thrw("best order has not-null next reference");
+            }
+
+            while (order != null) {
+                if (ordersInChain.containsKey(order.order.id)) {
+                    thrw("duplicate orderid in the chain");
+                }
+                ordersInChain.put(order.order.id, order);
+
+                if (lastOrder != null && order.next != lastOrder) {
+                    thrw("incorrect next reference");
+                }
+                if (order.priceLevel.price != order.order.price) {
+                    thrw("price differs");
+                }
+
+                if(order.priceLevel != priceLevel) {
+                    thrw("unexpected price level");
+                }
+
+                final PriceLevel knownBucket = bucketsFoundInChain.get(order.order.price);
+                if (knownBucket == null) {
+                    bucketsFoundInChain.put(order.order.price, order.priceLevel);
+                } else if (knownBucket != order.priceLevel) {
+                    thrw("found two different buckets having same price");
+                }
+
+                if (side != order.order.side) {
+                    thrw("not expected order action");
+                }
+
+                lastOrder = order;
+                order = order.prev;
+            }
+
+            if (lastPrice != -1 && ((side == OrderSide.BUY && priceLevel.price >= lastPrice) ||
+                    (side == OrderSide.SELL && priceLevel.price <= lastPrice))) {
+                thrw("unexpected price change direction");
+            }
+            lastPrice = priceLevel.price;
+
+            if (lastOrder.priceLevel.tail != lastOrder) {
+                thrw("last order is not a tail");
+            }
+        }
+
+        buckets.forEach((price, bucket) -> {
+            if (bucketsFoundInChain.remove(price) != bucket) thrw("bucket in the price-tree not found in the chain");
+        });
+
+        if (!bucketsFoundInChain.isEmpty()) {
+            thrw("found buckets in the chain that not discoverable from the price-tree");
+        }
+    }
+    private void validateStopBook(TreeMap<Long, DirectOrder> ordersInChain) {
+        TreeMap<Long, PriceLevel> buckets = stopBook.getStopLevels();
+        final TreeMap<Long, PriceLevel> bucketsFoundInChain = new TreeMap<>();
+
+        long lastPrice = -1;
+        for (PriceLevel priceLevel : buckets.values()) {
+            DirectOrder lastOrder = null;
+            DirectOrder order = priceLevel.head;
+
+            if(order == null) {
+                thrw("order is null");
+            }
+            if (order.next != null) {
+                thrw("best order has not-null next reference");
+            }
+
+            while (order != null) {
+                if (ordersInChain.containsKey(order.order.id)) {
+                    thrw("duplicate orderid in the chain");
+                }
+                ordersInChain.put(order.order.id, order);
+
+                if (lastOrder != null && order.next != lastOrder) {
+                    thrw("incorrect next reference");
+                }
+                if (order.priceLevel.price != order.order.stopPrice) {
+                    thrw("price differs");
+                }
+
+                if(order.priceLevel != priceLevel) {
+                    thrw("unexpected price level");
+                }
+
+                final PriceLevel knownBucket = bucketsFoundInChain.get(order.order.stopPrice);
+                if (knownBucket == null) {
+                    bucketsFoundInChain.put(order.order.stopPrice, order.priceLevel);
+                } else if (knownBucket != order.priceLevel) {
+                    thrw("found two different buckets having same price");
+                }
+
+                lastOrder = order;
+                order = order.prev;
+            }
+
+            if (lastPrice != -1 && priceLevel.price <= lastPrice) {
+                thrw("unexpected price change direction");
+            }
+            lastPrice = priceLevel.price;
+
+            if (lastOrder.priceLevel.tail != lastOrder) {
+                thrw("last order is not a tail");
+            }
+        }
+
+        buckets.forEach((price, bucket) -> {
+            if (bucketsFoundInChain.remove(price) != bucket) thrw("bucket in the price-tree not found in the chain");
+        });
+
+        if (!bucketsFoundInChain.isEmpty()) {
+            thrw("found buckets in the chain that not discoverable from the price-tree");
+        }
+    }
+
+    private void thrw(final String msg) {
+        throw new IllegalStateException(msg);
     }
 }

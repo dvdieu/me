@@ -36,7 +36,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
         initOrderBook();
 
         Order incoming = Order.createStandardOrder(123, -1, BUY, MARKET, TimeInForce.IOC, MAX_PRICE, 155);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -64,7 +64,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
         initOrderBook();
 
         Order incoming = Order.createStandardOrder(123, UID_2, BUY, MARKET, TimeInForce.IOC, MAX_PRICE, 155);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -92,7 +92,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
         initOrderBook();
 
         Order incoming = Order.createStandardOrder(123, -1, BUY, MARKET, TimeInForce.IOC, MAX_PRICE, 155);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -122,7 +122,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
         initOrderBook();
 
         Order incoming = Order.createStandardOrder(123, -1, BUY, MARKET, TimeInForce.IOC, MAX_PRICE, 500);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -153,7 +153,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
         initOrderBook();
 
         Order incoming = Order.createStandardOrder(123, UID_2, BUY, MARKET, TimeInForce.IOC, MAX_PRICE, 155);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -185,7 +185,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
         initOrderBook();
 
         Order incoming = Order.createStandardOrder(123, -1, BUY, MARKET, TimeInForce.IOC, MAX_PRICE, 155);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -214,7 +214,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
         initOrderBook();
 
         Order incoming = Order.createStandardOrder(123, -1, BUY, MARKET, TimeInForce.IOC, MAX_PRICE, 500);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -245,7 +245,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
         initOrderBook();
 
         Order incoming = Order.createStandardOrder(123, UID_2, BUY, MARKET, TimeInForce.IOC, MAX_PRICE, 155);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -269,19 +269,19 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
 
 
     private void initOrderBook() {
-        matchEng.placeOrder(Order.createStandardOrder(8, UID_1, SELL, LIMIT, TimeInForce.GTC, 201000L, 28L));
-        matchEng.placeOrder(Order.createStandardOrder(9, UID_2, SELL, LIMIT, TimeInForce.GTC, 201000L, 32L));
-        matchEng.placeOrder(Order.createStandardOrder(100, UID_3, SELL, LIMIT, TimeInForce.GTC, 201000L, 100L));
-        matchEng.placeOrder(Order.createStandardOrder(101, UID_4, SELL, LIMIT, TimeInForce.GTC, 201000L, 100L));
-        matchEng.placeOrder(Order.createStandardOrder(102, UID_5, SELL, LIMIT, TimeInForce.GTC, 201000L, 2L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(8, UID_1, SELL, LIMIT, TimeInForce.GTC, 201000L, 28L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(9, UID_2, SELL, LIMIT, TimeInForce.GTC, 201000L, 32L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(100, UID_3, SELL, LIMIT, TimeInForce.GTC, 201000L, 100L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(101, UID_4, SELL, LIMIT, TimeInForce.GTC, 201000L, 100L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(102, UID_5, SELL, LIMIT, TimeInForce.GTC, 201000L, 2L));
 
-        matchEng.placeOrder(Order.createStandardOrder(4, UID_1, BUY, LIMIT, TimeInForce.GTC, 81593L, 40L));
-        matchEng.placeOrder(Order.createStandardOrder(5, UID_2, BUY, LIMIT, TimeInForce.GTC, 81590L, 20L));
-        matchEng.placeOrder(Order.createStandardOrder(6, UID_3, BUY, LIMIT, TimeInForce.GTC, 81590L, 1L));
-        matchEng.placeOrder(Order.createStandardOrder(7, UID_4, BUY, LIMIT, TimeInForce.GTC, 81200L, 20L));
-        matchEng.placeOrder(Order.createStandardOrder(11, UID_5, BUY, LIMIT, TimeInForce.GTC, 10000L, 12L));
-        matchEng.placeOrder(Order.createStandardOrder(12, UID_1, BUY, LIMIT, TimeInForce.GTC, 10000L, 1L));
-        matchEng.placeOrder(Order.createStandardOrder(13, UID_2, BUY, LIMIT, TimeInForce.GTC, 9136L, 2L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(4, UID_1, BUY, LIMIT, TimeInForce.GTC, 81593L, 40L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(5, UID_2, BUY, LIMIT, TimeInForce.GTC, 81590L, 20L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(6, UID_3, BUY, LIMIT, TimeInForce.GTC, 81590L, 1L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(7, UID_4, BUY, LIMIT, TimeInForce.GTC, 81200L, 20L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(11, UID_5, BUY, LIMIT, TimeInForce.GTC, 10000L, 12L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(12, UID_1, BUY, LIMIT, TimeInForce.GTC, 10000L, 1L));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(13, UID_2, BUY, LIMIT, TimeInForce.GTC, 9136L, 2L));
 
 
         L2MarketData snapshot = matchEng.getL2MarketData();

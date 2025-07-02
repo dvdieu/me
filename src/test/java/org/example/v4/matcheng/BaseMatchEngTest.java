@@ -10,6 +10,17 @@ import static org.hamcrest.Matchers.is;
 public class BaseMatchEngTest {
 
 
+    public void placeOrderAndValidate(MatchEng matchEng, Order order) {
+        matchEng.placeOrder(order);
+        matchEng.validateInternalState();
+    }
+
+    public Order cancelOrderAndValidate(MatchEng matchEng, long id) {
+        Order order = matchEng.cancelOrder(id);
+        matchEng.validateInternalState();
+        return order;
+    }
+
 
     // ------------------------------- UTILITY METHODS --------------------------
     public void checkEventTrade(Order incoming, int index, long matchedId, long price, long size) {

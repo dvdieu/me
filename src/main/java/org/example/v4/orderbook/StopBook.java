@@ -14,6 +14,10 @@ public class StopBook {
         return stopLevels.computeIfAbsent(price, PriceLevel::new);
     }
 
+    public TreeMap<Long, PriceLevel> getStopLevels() {
+        return stopLevels;
+    }
+
     public DirectOrder addStopOrder(Order order) {
         PriceLevel level = getOrCreateLevel(order.stopPrice);
         return level.addOrder(order);

@@ -16,19 +16,18 @@ public class PriceLevel {
     }
 
     public DirectOrder addOrder(Order order) {
+        DirectOrder directOrder = new DirectOrder(order, this);
+
         if(head == null) {
-            head = new DirectOrder(order, this);
+            head = directOrder;
             tail = head;
-
-            return head;
         } else {
-            DirectOrder newTail = new DirectOrder(order, this);
-            tail.prev = newTail;
-            newTail.next = tail;
-            tail = newTail;
-
-            return newTail;
+            tail.prev = directOrder;
+            directOrder.next = tail;
+            tail = directOrder;
         }
+
+        return directOrder;
     }
 
     public boolean isEmpty() {

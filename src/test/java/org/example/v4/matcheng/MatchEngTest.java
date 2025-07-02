@@ -19,11 +19,11 @@ class MatchEngTest extends BaseMatchEngTest {
     @Test
     void shouldMatchFully() {
         MatchEng matchEng = new MatchEng();
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 10));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 110, 10));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 10));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, SELL, LIMIT, GTC, 110, 10));
 
         Order incoming = Order.createStandardOrder(3, 2, SELL, LIMIT, GTC, 100, 5);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -45,10 +45,10 @@ class MatchEngTest extends BaseMatchEngTest {
     @Test
     void shouldMatchGTCPartially() {
         MatchEng matchEng = new MatchEng();
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 5));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 5));
 
         Order incoming = Order.createStandardOrder(2, 2, SELL, LIMIT, GTC, 100, 10);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -70,10 +70,10 @@ class MatchEngTest extends BaseMatchEngTest {
     @Test
     void shouldMatchIOCPartially() {
         MatchEng matchEng = new MatchEng();
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 5));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 5));
 
         Order incoming = Order.createStandardOrder(2, 2, SELL, MARKET, IOC, 100, 10);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -96,10 +96,10 @@ class MatchEngTest extends BaseMatchEngTest {
     @Test
     void shouldNoMatchGTC() {
         MatchEng matchEng = new MatchEng();
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 95, 10));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 95, 10));
 
         Order incoming = Order.createStandardOrder(2, 2, SELL, LIMIT, GTC, 100, 10);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -120,10 +120,10 @@ class MatchEngTest extends BaseMatchEngTest {
     @Test
     void shouldNoMatchIOC() {
         MatchEng matchEng = new MatchEng();
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 95, 10));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 95, 10));
 
         Order incoming = Order.createStandardOrder(2, 2, SELL, MARKET, IOC, 100, 10);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -145,11 +145,11 @@ class MatchEngTest extends BaseMatchEngTest {
     @Test
     void shouldNoMatchFOK() {
         MatchEng matchEng = new MatchEng();
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 10));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 110, 10));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 10));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 110, 10));
 
         Order incoming = Order.createStandardOrder(3, 2, SELL, MARKET, FOK, 0, 25);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -171,11 +171,11 @@ class MatchEngTest extends BaseMatchEngTest {
     @Test
     void shouldMatchMultiplePriceLevels() {
         MatchEng matchEng = new MatchEng();
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 101, 5));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 100, 5));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 101, 5));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 100, 5));
 
         Order incoming = Order.createStandardOrder(3, 2, SELL, LIMIT, GTC, 100, 9);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -198,11 +198,11 @@ class MatchEngTest extends BaseMatchEngTest {
     @Test
     void shouldRefilledIcebergs() {
         MatchEng matchEng = new MatchEng();
-        matchEng.placeOrder(Order.createIcebergOrder(1, 1, BUY, 100, 10, 2));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 100, 5));
+        placeOrderAndValidate(matchEng, Order.createIcebergOrder(1, 1, BUY, 100, 10, 2));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 100, 5));
 
         Order incoming = Order.createStandardOrder(3, 2, SELL, LIMIT, GTC, 100, 10);
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -228,11 +228,11 @@ class MatchEngTest extends BaseMatchEngTest {
     @Test
     public void shouldAddPostOnlyOrders() {
         MatchEng matchEng = new MatchEng();
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 5));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 100, 10));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 5));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 100, 10));
 
         Order incoming = Order.createStandardOrder(3, 2, SELL, LIMIT, GTC, 110, 10).postOnly();
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
@@ -254,11 +254,11 @@ class MatchEngTest extends BaseMatchEngTest {
     @Test
     public void shouldRejectPostOnlyOrders() {
         MatchEng matchEng = new MatchEng();
-        matchEng.placeOrder(Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 5));
-        matchEng.placeOrder(Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 100, 10));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(1, 1, BUY, LIMIT, GTC, 100, 5));
+        placeOrderAndValidate(matchEng, Order.createStandardOrder(2, 1, BUY, LIMIT, GTC, 100, 10));
 
         Order incoming = Order.createStandardOrder(3, 2, SELL, LIMIT, GTC, 90, 10).postOnly();
-        matchEng.placeOrder(incoming);
+        placeOrderAndValidate(matchEng, incoming);
 
         L2MarketData snapshot = matchEng.getL2MarketData();
         L2MarketData expected = new L2MarketData(
