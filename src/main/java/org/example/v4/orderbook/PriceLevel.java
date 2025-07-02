@@ -2,8 +2,8 @@ package org.example.v4.orderbook;
 
 import org.example.v4.order.Order;
 
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PriceLevel {
 
@@ -11,11 +11,23 @@ public class PriceLevel {
     public DirectOrder head;
     public DirectOrder tail;
 
+    public long numOrders;
+    public long remainingQuantity;
+    public long displayedQuantity;
+    public Map<Integer, Long> remainQuantityByUsers = new HashMap<>();
+    public Map<Integer, Long> displayedQuantityByUsers = new HashMap<>();
+
     public PriceLevel(long price) {
         this.price = price;
     }
 
     public DirectOrder addOrder(Order order) {
+        numOrders++;
+        remainingQuantity += order.remainingQuantity;
+        displayedQuantity += order.displayedQuantity;
+        remainQuantityByUsers.merge(order.userId, order.remainingQuantity, Long::sum);
+        displayedQuantityByUsers.merge(order.userId, order.displayedQuantity, Long::sum);
+
         DirectOrder directOrder = new DirectOrder(order, this);
 
         if(head == null) {
@@ -34,7 +46,48 @@ public class PriceLevel {
         return head == null;
     }
 
-    public Stream<DirectOrder> orderStream() {
-        return StreamSupport.stream(new OrdersSpliterator(head), false);
+    public long getRemainingQuantityWithoutUser(int userId) {
+        return remainingQuantity - remainQuantityByUsers.getOrDefault(userId, 0L);
+    }
+
+    public long getDisplayedQuantityWithoutUser(int userId) {
+        return displayedQuantity - displayedQuantityByUsers.getOrDefault(userId, 0L);
+    }
+
+    public void removeOrderVolume(Order order) {
+        numOrders--;
+
+        if(order.displayedQuantity > 0) {
+            displayedQuantity -= order.displayedQuantity;
+
+            displayedQuantityByUsers.computeIfPresent(order.userId, (k, v) -> {
+                long l = v - order.displayedQuantity;
+                return l > 0 ? l : null;
+            });
+        }
+
+        if(order.remainingQuantity > 0) {
+            remainingQuantity -= order.remainingQuantity;
+
+            remainQuantityByUsers.computeIfPresent(order.userId, (k, v) -> {
+                long l = v - order.remainingQuantity;
+                return l > 0 ? l : null;
+            });
+        }
+    }
+
+    public void removeTradeVolume(int userId, long tradeSize) {
+        remainingQuantity -= tradeSize;
+        displayedQuantity -= tradeSize;
+
+        remainQuantityByUsers.computeIfPresent(userId, (k, v) -> {
+            long l = v - tradeSize;
+            return l > 0 ? l : null;
+        });
+
+        displayedQuantityByUsers.computeIfPresent(userId, (k, v) -> {
+            long l = v - tradeSize;
+            return l > 0 ? l : null;
+        });
     }
 }

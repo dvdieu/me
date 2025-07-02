@@ -44,13 +44,16 @@ public class StopBook {
 
         long totalLiquidity = 0;
         for (PriceLevel priceLevel : subMap.values()) {
-            for (DirectOrder directOrder : priceLevel.orderStream().toList()) {
+            DirectOrder directOrder = priceLevel.head;
+            while (directOrder != null) {
                 Order order = directOrder.order;
                 if (incoming.side != order.side && order.timeInForce != TimeInForce.FOK
                         && !incoming.isSelfMatch(order)
                         && (order.type == OrderType.STOP_MARKET || incoming.isPriceAcceptable(order.price))) {
                     totalLiquidity += order.remainingQuantity;
                 }
+
+                directOrder = directOrder.prev;
             }
         }
 
@@ -73,7 +76,11 @@ public class StopBook {
         Iterator<Map.Entry<Long, PriceLevel>> iterator = subMap.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Long, PriceLevel> entry = iterator.next();
-            entry.getValue().orderStream().forEach(e -> triggered.add(e.order));
+            DirectOrder directOrder = entry.getValue().head;
+            while (directOrder != null) {
+                triggered.add(directOrder.order);
+                directOrder = directOrder.prev;
+            }
 
             iterator.remove();
         }
@@ -89,7 +96,7 @@ public class StopBook {
         System.out.println("\nStop Book:");
         System.out.print("Price triggers: \t");
         for (Map.Entry<Long, PriceLevel> entry : stopLevels.entrySet()) {
-            System.out.print(entry.getKey() + "[" + entry.getValue().orderStream().count() + "] \t");
+            System.out.print(entry.getKey() + "[" + entry.getValue().numOrders + "] \t");
         }
         System.out.println();
     }

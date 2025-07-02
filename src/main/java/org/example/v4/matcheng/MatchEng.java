@@ -159,9 +159,7 @@ public class MatchEng {
                 break;
             }
 
-            available += entry.getValue().orderStream()
-                    .filter(e -> !order.isSelfMatch(e.order))
-                    .mapToLong(e -> e.order.remainingQuantity).sum();
+            available += entry.getValue().getRemainingQuantityWithoutUser(order.userId);
 
             available += stopBook.calculateLiquidity(order, prevPrice, price);
 
@@ -275,6 +273,7 @@ public class MatchEng {
         System.out.printf("Trade: %s (Maker) %d vs %s (Taker) %d @%d => %d\n",
                 resting.side, resting.id, incoming.side, incoming.id, resting.price, tradeSize);
 
+        restingDirect.priceLevel.removeTradeVolume(resting.userId, tradeSize);
         incoming.matcherTradeEvents.add(MatcherTradeEvent.createTradeEvent(resting.id, resting.price, tradeSize));
 
         if(resting.displayedQuantity == 0) {
@@ -322,6 +321,10 @@ public class MatchEng {
             DirectOrder lastOrder = null;
             DirectOrder order = priceLevel.head;
 
+            int expectedBucketOrders = 0;
+            long expectedBucketRemainingQuantity = 0;
+            long expectedBucketDisplayedQuantity = 0;
+
             if(order == null) {
                 thrw("order is null");
             }
@@ -330,6 +333,10 @@ public class MatchEng {
             }
 
             while (order != null) {
+                expectedBucketOrders++;
+                expectedBucketRemainingQuantity += order.order.remainingQuantity;
+                expectedBucketDisplayedQuantity += order.order.displayedQuantity;
+
                 if (ordersInChain.containsKey(order.order.id)) {
                     thrw("duplicate orderid in the chain");
                 }
@@ -370,6 +377,16 @@ public class MatchEng {
             if (lastOrder.priceLevel.tail != lastOrder) {
                 thrw("last order is not a tail");
             }
+
+            if (priceLevel.remainingQuantity != expectedBucketRemainingQuantity) {
+                thrw("bucket remaining quantity does not match orders chain sizes");
+            }
+            if (priceLevel.displayedQuantity != expectedBucketDisplayedQuantity) {
+                thrw("bucket remaining quantity does not match orders chain sizes");
+            }
+            if (priceLevel.numOrders != expectedBucketOrders) {
+                thrw("bucket numOrders does not match orders chain length");
+            }
         }
 
         buckets.forEach((price, bucket) -> {
@@ -389,6 +406,10 @@ public class MatchEng {
             DirectOrder lastOrder = null;
             DirectOrder order = priceLevel.head;
 
+            int expectedBucketOrders = 0;
+            long expectedBucketRemainingQuantity = 0;
+            long expectedBucketDisplayedQuantity = 0;
+
             if(order == null) {
                 thrw("order is null");
             }
@@ -397,6 +418,10 @@ public class MatchEng {
             }
 
             while (order != null) {
+                expectedBucketOrders++;
+                expectedBucketRemainingQuantity += order.order.remainingQuantity;
+                expectedBucketDisplayedQuantity += order.order.displayedQuantity;
+
                 if (ordersInChain.containsKey(order.order.id)) {
                     thrw("duplicate orderid in the chain");
                 }
@@ -431,6 +456,16 @@ public class MatchEng {
 
             if (lastOrder.priceLevel.tail != lastOrder) {
                 thrw("last order is not a tail");
+            }
+
+            if (priceLevel.remainingQuantity != expectedBucketRemainingQuantity) {
+                thrw("bucket remaining quantity does not match orders chain sizes");
+            }
+            if (priceLevel.displayedQuantity != expectedBucketDisplayedQuantity) {
+                thrw("bucket remaining quantity does not match orders chain sizes");
+            }
+            if (priceLevel.numOrders != expectedBucketOrders) {
+                thrw("bucket numOrders does not match orders chain length");
             }
         }
 

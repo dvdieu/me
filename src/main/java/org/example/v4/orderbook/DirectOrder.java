@@ -16,6 +16,8 @@ public class DirectOrder {
     }
 
     public void remove() {
+        priceLevel.removeOrderVolume(order);
+
         if(prev != null) {
             prev.next = next;
         }

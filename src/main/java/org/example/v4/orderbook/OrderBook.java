@@ -73,10 +73,9 @@ public class OrderBook {
 
 
     private void logPriceLevel(PriceLevel level) {
-        long quantity = level.orderStream().mapToLong(e -> e.order.remainingQuantity).sum();
-        long count = level.orderStream().count();
-        boolean icebergAtLevel = level.orderStream().anyMatch(e -> e.order.isIceberg);
-        System.out.printf("%d(%d,%d%s) \t", level.price, quantity, count, icebergAtLevel ? " (iceberg)" : "");
+        long quantity = level.remainingQuantity;
+        long count = level.numOrders;
+        System.out.printf("%d(%d,%d) \t", level.price, quantity, count);
     }
 
     public L2MarketData getL2MarketDataSnapshot() {
@@ -93,8 +92,8 @@ public class OrderBook {
         sellLevels.forEach((p, bucket) -> {
             final int i = data.askSize++;
             data.askPrices[i] = bucket.price;
-            data.askVolumes[i] = bucket.orderStream().mapToLong(e -> e.order.remainingQuantity).sum();
-            data.askOrders[i] = bucket.orderStream().count();
+            data.askVolumes[i] = bucket.remainingQuantity;
+            data.askOrders[i] = bucket.numOrders;
         });
     }
 
@@ -103,8 +102,8 @@ public class OrderBook {
         buyLevels.forEach((p, bucket) -> {
             final int i = data.bidSize++;
             data.bidPrices[i] = bucket.price;
-            data.bidVolumes[i] = bucket.orderStream().mapToLong(e -> e.order.remainingQuantity).sum();
-            data.bidOrders[i] = bucket.orderStream().count();
+            data.bidVolumes[i] = bucket.remainingQuantity;
+            data.bidOrders[i] = bucket.numOrders;
         });
     }
 }

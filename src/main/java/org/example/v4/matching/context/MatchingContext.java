@@ -32,9 +32,7 @@ public class MatchingContext {
     public void updatePriceLevel(PriceLevel priceLevel) {
         this.priceLevel = priceLevel;
         this.refilledOrders.clear();
-        this.bucketRemaining = priceLevel.orderStream()
-                .filter(o -> !incoming.isSelfMatch(o.order))
-                .mapToLong(o -> o.order.displayedQuantity).sum();
+        this.bucketRemaining = priceLevel.getDisplayedQuantityWithoutUser(incoming.userId);
     }
 
 
