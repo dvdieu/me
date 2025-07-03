@@ -123,7 +123,7 @@ public class MatchEngImpl implements MatchEng {
             long available = calculatePotentialFill(incoming);
             if(available < needed) {
                 System.out.println("-> FOK check FAILED: needed " + needed + ", available " + available);
-                cmd.addTradeEventAtFirst(MatcherTradeEvent.createRejectEvent(incoming, incoming.remainingQuantity));
+                cmd.addTradeEvent(MatcherTradeEvent.createRejectEvent(incoming, incoming.remainingQuantity));
                 return;
             }
         }
@@ -137,7 +137,7 @@ public class MatchEngImpl implements MatchEng {
                 orders.put(incoming.orderId, directOrder);
                 System.out.println("-> Partially filled, " + incoming.remainingQuantity + " remaining added to book as resting order");
             } else {
-                cmd.addTradeEventAtFirst(MatcherTradeEvent.createRejectEvent(incoming, incoming.remainingQuantity));
+                cmd.addTradeEvent(MatcherTradeEvent.createRejectEvent(incoming, incoming.remainingQuantity));
                 System.out.println("-> IOC leftover cancelled: " + incoming.remainingQuantity + " not filled");
             }
         }

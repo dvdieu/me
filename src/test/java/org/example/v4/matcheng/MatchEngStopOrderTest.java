@@ -88,12 +88,12 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
         assertThat(cmd.extractEvents().size(), is(7));
-        checkEventRejection(cmd, 0, 3);
-        checkEventTrade(cmd, 1, 100, 1, 94, 1);
-        checkEventTrade(cmd, 2, 100, 2, 96, 1);
-        checkEventTrade(cmd, 3, 100, 3, 96, 5);
-        checkEventTrade(cmd, 4, 100, 4, 96, 5);
-        checkEventTrade(cmd, 5, 100, 5, 96, 5);
+        checkEventTrade(cmd, 0, 100, 1, 94, 1);
+        checkEventTrade(cmd, 1, 100, 2, 96, 1);
+        checkEventTrade(cmd, 2, 100, 3, 96, 5);
+        checkEventTrade(cmd, 3, 100, 4, 96, 5);
+        checkEventTrade(cmd, 4, 100, 5, 96, 5);
+        checkEventRejection(cmd, 5, 3);
         checkEventTrade(cmd, 6, 8, 6, 97, 1);
     }
 
@@ -168,12 +168,12 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
         assertEquals(expected, snapshot);
 
         assertThat(cmd.extractEvents().size(), is(7));
-        checkEventRejection(cmd, 0, 3);
-        checkEventTrade(cmd, 1, 100, 1, 106, 1);
-        checkEventTrade(cmd, 2, 100,2, 104, 1);
-        checkEventTrade(cmd, 3, 100,3, 104, 5);
-        checkEventTrade(cmd, 4, 100,4, 104, 5);
-        checkEventTrade(cmd, 5, 100,5, 104, 5);
+        checkEventTrade(cmd, 0, 100, 1, 106, 1);
+        checkEventTrade(cmd, 1, 100,2, 104, 1);
+        checkEventTrade(cmd, 2, 100,3, 104, 5);
+        checkEventTrade(cmd, 3, 100,4, 104, 5);
+        checkEventTrade(cmd, 4, 100,5, 104, 5);
+        checkEventRejection(cmd, 5, 3);
         checkEventTrade(cmd, 6, 8, 6, 103, 1);
     }
 
@@ -372,13 +372,13 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
         assertEquals(expected, snapshot);
 
         assertThat(cmd.extractEvents().size(), is(7));
-        checkEventRejection(cmd, 0,  3, 5);
-        checkEventTrade(cmd, 1, 100,2, 96, 1);
-        checkEventTrade(cmd, 2, 100,1, 93, 1);
-        checkEventTrade(cmd, 3, 100,5, 93, 5);
-        checkEventTrade(cmd, 4, 100,6, 93, 5);
-        checkEventTrade(cmd, 5, 100,7, 93, 5);
-        checkEventTrade(cmd, 6, 100,8, 93, 3);
+        checkEventTrade(cmd, 0, 100,2, 96, 1);
+        checkEventTrade(cmd, 1, 100,1, 93, 1);
+        checkEventTrade(cmd, 2, 100,5, 93, 5);
+        checkEventTrade(cmd, 3, 100,6, 93, 5);
+        checkEventTrade(cmd, 4, 100,7, 93, 5);
+        checkEventTrade(cmd, 5, 100,8, 93, 3);
+        checkEventRejection(cmd, 6,  3, 5);
     }
 
 }

@@ -101,16 +101,6 @@ public class OrderCommand extends Order {
         matcherEventTail = event;
     }
 
-    public void addTradeEventAtFirst(MatcherTradeEvent event) {
-        if(matcherEventTail == null) {
-            matcherEventTail = event;
-        } else {
-            event.nextEvent = matcherEvent;
-        }
-        matcherEvent = event;
-    }
-
-
     public List<MatcherTradeEvent> extractedTradeEvents;
     public List<MatcherTradeEvent> extractEvents() {
         if(extractedTradeEvents == null) {

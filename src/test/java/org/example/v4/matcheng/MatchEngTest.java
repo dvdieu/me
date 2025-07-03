@@ -86,8 +86,8 @@ class MatchEngTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
         assertThat(cmd.extractEvents().size(), is(2));
-        checkEventRejection(cmd, 0, 5);
-        checkEventTrade(cmd, 1, 2, 1, 100, 5);
+        checkEventTrade(cmd, 0, 2, 1, 100, 5);
+        checkEventRejection(cmd, 1, 5);
     }
 
     @Test

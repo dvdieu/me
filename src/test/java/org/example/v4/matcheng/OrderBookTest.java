@@ -240,7 +240,7 @@ public class OrderBookTest extends BaseMatchEngTest {
         assertThat(cmd.extractEvents().size(), is(7));
 
         // 6 trades generated, first comes rejection with size=25 left unmatched
-        checkEventRejection(cmd, 0, 25L);
+        checkEventRejection(cmd, 6, 25L);
     }
 
     // MARKETABLE GTC ORDERS

@@ -138,12 +138,12 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
 
         assertThat(cmd.extractEvents().size(), is(6));
 
-        checkEventRejection(cmd, 0, 238);
-        checkEventTrade(cmd, 1, 123, 8L, 201000L, 28L);
-        checkEventTrade(cmd, 2, 123, 9L, 201000L, 32L);
-        checkEventTrade(cmd, 3, 123, 100L, 201000L, 100L);
-        checkEventTrade(cmd, 4, 123, 101L, 201000L, 100L);
-        checkEventTrade(cmd, 5, 123, 102L, 201000L, 2L);
+        checkEventTrade(cmd, 0, 123, 8L, 201000L, 28L);
+        checkEventTrade(cmd, 1, 123, 9L, 201000L, 32L);
+        checkEventTrade(cmd, 2, 123, 100L, 201000L, 100L);
+        checkEventTrade(cmd, 3, 123, 101L, 201000L, 100L);
+        checkEventTrade(cmd, 4, 123, 102L, 201000L, 2L);
+        checkEventRejection(cmd, 5, 238);
     }
 
     @Test
@@ -227,12 +227,12 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
 
         assertThat(cmd.extractEvents().size(), is(6));
 
-        checkEventRejection(cmd, 0, 238);
-        checkEventTrade(cmd, 1, 123,8L, 201000L, 28L);
-        checkEventTrade(cmd, 2, 123,9L, 201000L, 32L);
-        checkEventTrade(cmd, 3, 123,100L, 201000L, 100L);
-        checkEventTrade(cmd, 4, 123,101L, 201000L, 100L);
-        checkEventTrade(cmd, 5, 123,102L, 201000L, 2L);
+        checkEventTrade(cmd, 0, 123,8L, 201000L, 28L);
+        checkEventTrade(cmd, 1, 123,9L, 201000L, 32L);
+        checkEventTrade(cmd, 2, 123,100L, 201000L, 100L);
+        checkEventTrade(cmd, 3, 123,101L, 201000L, 100L);
+        checkEventTrade(cmd, 4, 123,102L, 201000L, 2L);
+        checkEventRejection(cmd, 5, 238);
     }
 
     @Test
