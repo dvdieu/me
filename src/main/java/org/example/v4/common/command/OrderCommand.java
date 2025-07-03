@@ -101,16 +101,13 @@ public class OrderCommand extends Order {
         matcherEventTail = event;
     }
 
-    public List<MatcherTradeEvent> extractedTradeEvents;
     public List<MatcherTradeEvent> extractEvents() {
-        if(extractedTradeEvents == null) {
-            extractedTradeEvents = new ArrayList<>();
+        List<MatcherTradeEvent> extractedTradeEvents = new ArrayList<>();
 
-            MatcherTradeEvent mte = this.matcherEvent;
-            while (mte != null) {
-                extractedTradeEvents.add(mte);
-                mte = mte.nextEvent;
-            }
+        MatcherTradeEvent mte = this.matcherEvent;
+        while (mte != null) {
+            extractedTradeEvents.add(mte);
+            mte = mte.nextEvent;
         }
 
         return extractedTradeEvents;
