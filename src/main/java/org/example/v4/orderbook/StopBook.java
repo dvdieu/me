@@ -59,7 +59,7 @@ public class StopBook {
         return totalLiquidity;
     }
 
-    public List<Order> getTriggeredStopOrders(long prevPrice, long newPrice) {
+    public List<DirectOrder> getTriggeredStopOrders(long prevPrice, long newPrice) {
         if (newPrice == prevPrice) {
             return Collections.emptyList();
         }
@@ -71,7 +71,7 @@ public class StopBook {
             subMap = stopLevels.subMap(newPrice, true, prevPrice, false).reversed();
         }
 
-        List<Order> triggered = new ArrayList<>();
+        List<DirectOrder> triggered = new ArrayList<>();
         Iterator<Map.Entry<Long, PriceLevel>> iterator = subMap.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Long, PriceLevel> entry = iterator.next();
