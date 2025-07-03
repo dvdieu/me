@@ -347,7 +347,7 @@ public class MatchEngImpl implements MatchEng {
                 if (lastOrder != null && order.next != lastOrder) {
                     thrw("incorrect next reference");
                 }
-                if (order.priceLevel.price != order.price) {
+                if (priceLevel.price != order.price) {
                     thrw("price differs");
                 }
 
@@ -376,7 +376,7 @@ public class MatchEngImpl implements MatchEng {
             }
             lastPrice = priceLevel.price;
 
-            if (lastOrder.priceLevel.tail != lastOrder) {
+            if (priceLevel.tail != lastOrder) {
                 thrw("last order is not a tail");
             }
 
@@ -432,7 +432,7 @@ public class MatchEngImpl implements MatchEng {
                 if (lastOrder != null && order.next != lastOrder) {
                     thrw("incorrect next reference");
                 }
-                if (order.priceLevel.price != order.stopPrice) {
+                if (priceLevel.price != order.stopPrice) {
                     thrw("price differs");
                 }
 
@@ -456,7 +456,7 @@ public class MatchEngImpl implements MatchEng {
             }
             lastPrice = priceLevel.price;
 
-            if (lastOrder.priceLevel.tail != lastOrder) {
+            if (priceLevel.tail != lastOrder) {
                 thrw("last order is not a tail");
             }
 
