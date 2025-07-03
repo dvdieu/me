@@ -15,7 +15,7 @@ public class ProRataStep extends BaseMatchingStep {
         DirectOrder directOrder = context.priceLevel.head;
         while (directOrder != null && context.incoming.remainingQuantity > 0) {
             if (checkSelfMatching(context, directOrder)) {
-                long proRataPass = directOrder.order.displayedQuantity * remainingSize / bucketVolume;
+                long proRataPass = directOrder.displayedQuantity * remainingSize / bucketVolume;
                 long tradeSize = Math.min(proRataPass, context.incoming.remainingQuantity);
 
                 if(tradeSize >= config.proRataMin) {

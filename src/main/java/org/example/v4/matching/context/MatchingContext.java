@@ -43,8 +43,8 @@ public class MatchingContext {
         this.bucketRemaining -= tradeSize;
         matchingCallback.performMatch(cmd, incoming, resting, tradeSize);
 
-        if(resting.order.displayedQuantity == 0) {
-            Order icebergChild = resting.order.createIcebergChild();
+        if(resting.displayedQuantity == 0) {
+            Order icebergChild = resting.createIcebergChild();
             if(icebergChild != null) {
                 refilledOrders.add(icebergChild);
             }

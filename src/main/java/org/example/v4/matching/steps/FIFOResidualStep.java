@@ -16,7 +16,7 @@ public class FIFOResidualStep extends BaseMatchingStep {
         DirectOrder directOrder = context.priceLevel.head;
         while (directOrder != null && context.incoming.remainingQuantity > 0) {
             if(checkSelfMatching(context, directOrder)) {
-                long tradeSize = Math.min(directOrder.order.displayedQuantity, context.incoming.remainingQuantity);
+                long tradeSize = Math.min(directOrder.displayedQuantity, context.incoming.remainingQuantity);
                 context.performMatch(directOrder, tradeSize);
             }
 

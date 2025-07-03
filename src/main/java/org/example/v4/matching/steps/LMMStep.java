@@ -16,11 +16,11 @@ public class LMMStep extends BaseMatchingStep {
         DirectOrder directOrder = context.priceLevel.head;
         while (directOrder != null && remainingLmmQuota > 0) {
             if (checkSelfMatching(context, directOrder)) {
-                int lmmPercentage = config.lmmPerThousands.getOrDefault(directOrder.order.userId, 0);
+                int lmmPercentage = config.lmmPerThousands.getOrDefault(directOrder.userId, 0);
                 if(lmmPercentage != 0) {
                     long lmmAllocate = lmmPercentage * remainingSize / 1000;
                     long minTradeSize = Math.max(lmmAllocate, config.lmmMinFill);
-                    long tradeSize = Math.min(Math.min(minTradeSize, remainingLmmQuota), directOrder.order.displayedQuantity);
+                    long tradeSize = Math.min(Math.min(minTradeSize, remainingLmmQuota), directOrder.displayedQuantity);
 
                     remainingLmmQuota -= tradeSize;
                     context.performMatch(directOrder, tradeSize);

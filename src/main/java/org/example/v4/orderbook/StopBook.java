@@ -26,7 +26,7 @@ public class StopBook {
     public void removeOrder(DirectOrder order) {
         order.remove();
         if(order.priceLevel.isEmpty()) {
-            stopLevels.remove(order.order.stopPrice);
+            stopLevels.remove(order.stopPrice);
         }
     }
 
@@ -44,16 +44,15 @@ public class StopBook {
 
         long totalLiquidity = 0;
         for (PriceLevel priceLevel : subMap.values()) {
-            DirectOrder directOrder = priceLevel.head;
-            while (directOrder != null) {
-                Order order = directOrder.order;
+            DirectOrder order = priceLevel.head;
+            while (order != null) {
                 if (incoming.side != order.side && order.timeInForce != TimeInForce.FOK
                         && !incoming.isSelfMatch(order)
                         && (order.type == OrderType.STOP_MARKET || incoming.isPriceAcceptable(order.price))) {
                     totalLiquidity += order.remainingQuantity;
                 }
 
-                directOrder = directOrder.prev;
+                order = order.prev;
             }
         }
 
@@ -78,7 +77,7 @@ public class StopBook {
             Map.Entry<Long, PriceLevel> entry = iterator.next();
             DirectOrder directOrder = entry.getValue().head;
             while (directOrder != null) {
-                triggered.add(directOrder.order);
+                triggered.add(directOrder);
                 directOrder = directOrder.prev;
             }
 

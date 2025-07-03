@@ -42,17 +42,16 @@ public class MatchEngImpl implements MatchEng {
 
     @Override
     public CommandResultCode placeOrder(OrderCommand cmd) {
-        Order order = cmd.buildOrder();
         if(orders.containsKey(cmd.orderId)) {
-            cmd.matcherEvents.add(MatcherTradeEvent.createRejectEvent(order, cmd.remainingQuantity));
+            cmd.matcherEvents.add(MatcherTradeEvent.createRejectEvent(cmd, cmd.remainingQuantity));
             System.out.println("duplicate orderId: " + cmd.orderId);
             return CommandResultCode.SUCCESS;
         }
 
         if(cmd.type == OrderType.STOP_MARKET || cmd.type == OrderType.STOP_LIMIT) {
             if(cmd.stopPrice != lastTradePrice) {
-                DirectOrder directOrder = stopBook.addStopOrder(order);
-                orders.put(order.id, directOrder);
+                DirectOrder directOrder = stopBook.addStopOrder(cmd);
+                orders.put(cmd.orderId, directOrder);
                 System.out.println("-> Stop order added (waiting for trigger)");
                 logOrderBookState();
                 return CommandResultCode.SUCCESS;
@@ -63,18 +62,18 @@ public class MatchEngImpl implements MatchEng {
 
         if(cmd.postOnly) {
             PriceLevel priceLevel = orderBook.getBestLevel(cmd.side.getOpposite());
-            if(priceLevel != null && order.isPriceAcceptable(priceLevel.price)) {
+            if(priceLevel != null && cmd.isPriceAcceptable(priceLevel.price)) {
                 System.out.println("-> Post Only check FAILED: limitPrice: " + cmd.price + ", bestPrice: " + priceLevel.price);
-                cmd.matcherEvents.addFirst(MatcherTradeEvent.createRejectEvent(order, cmd.remainingQuantity));
+                cmd.matcherEvents.addFirst(MatcherTradeEvent.createRejectEvent(cmd, cmd.remainingQuantity));
                 return CommandResultCode.SUCCESS;
             }
         }
 
-        commandQueue.add(order);
+        commandQueue.add(cmd);
 
         while(!commandQueue.isEmpty()) {
             Order incoming = commandQueue.poll();
-            System.out.println("\nProcess order: " + order);
+            System.out.println("\nProcess order: " + cmd);
             processIncomingOrder(cmd, incoming);
 
             if(!commandQueue.isEmpty() && cmd.stopAfterFirstCommand) {
@@ -93,20 +92,19 @@ public class MatchEngImpl implements MatchEng {
 
     @Override
     public CommandResultCode cancelOrder(OrderCommand cmd) {
-        DirectOrder directOrder = orders.remove(cmd.orderId);
-        if(directOrder == null || cmd.userId != directOrder.order.userId) {
+        DirectOrder order = orders.remove(cmd.orderId);
+        if(order == null || cmd.userId != order.userId) {
             return CommandResultCode.MATCHING_UNKNOWN_ORDER_ID;
         }
 
-        Order order = directOrder.order;
         System.out.println("--------------------------------------------------------");
         System.out.println("Cancel order: " + order);
 
         if(order.type == OrderType.LIMIT || order.type == OrderType.MARKET) {
-            orderBook.removeOrder(directOrder);
+            orderBook.removeOrder(order);
             cmd.matcherEvents.add(MatcherTradeEvent.createReduceEvent(order, order.remainingQuantity, true));
         } else {
-            stopBook.removeOrder(directOrder);
+            stopBook.removeOrder(order);
         }
 
         logOrderBookState();
@@ -115,8 +113,7 @@ public class MatchEngImpl implements MatchEng {
 
     @Override
     public Order getOrderById(long orderId) {
-        DirectOrder directOrder = orders.get(orderId);
-        return directOrder == null ? null : directOrder.order;
+        return orders.get(orderId);
     }
 
 
@@ -137,7 +134,7 @@ public class MatchEngImpl implements MatchEng {
         if(incoming.remainingQuantity > 0) {
             if(incoming.timeInForce == TimeInForce.GTC) {
                 DirectOrder directOrder = orderBook.addOrder(incoming);
-                orders.put(incoming.id, directOrder);
+                orders.put(incoming.orderId, directOrder);
                 System.out.println("-> Partially filled, " + incoming.remainingQuantity + " remaining added to book as resting order");
             } else {
                 cmd.matcherEvents.addFirst(MatcherTradeEvent.createRejectEvent(incoming, incoming.remainingQuantity));
@@ -192,8 +189,8 @@ public class MatchEngImpl implements MatchEng {
 
             for (Order refilledOrder : matchingContext.refilledOrders) {
                 DirectOrder directOrder = orderBook.addOrder(refilledOrder);
-                orders.put(refilledOrder.id, directOrder);
-                System.out.printf("-> Iceberg order %d refilled [displayed=%d, hidden=%d] and placed at end of queue\n", refilledOrder.id, refilledOrder.displayedQuantity, refilledOrder.remainingQuantity);
+                orders.put(refilledOrder.orderId, directOrder);
+                System.out.printf("-> Iceberg order %d refilled [displayed=%d, hidden=%d] and placed at end of queue\n", refilledOrder.orderId, refilledOrder.displayedQuantity, refilledOrder.remainingQuantity);
             }
 
             triggerStopOrders(cmd, incoming, prevTradePrice, lastTradePrice);
@@ -206,14 +203,14 @@ public class MatchEngImpl implements MatchEng {
 
         matchingContext.selfMatchOrders.forEach(order -> {
             DirectOrder directOrder = orderBook.addOrder(order);
-            orders.put(order.id, directOrder);
+            orders.put(order.orderId, directOrder);
         });
     }
 
     private void triggerStopOrders(OrderCommand cmd, Order incoming, long prevPrice, long lastPrice) {
         List<Order> triggeredStopOrders = stopBook.getTriggeredStopOrders(prevPrice, lastPrice);
         for (Order stopOrder : triggeredStopOrders) {
-            System.out.printf("-> Triggered: %s %s (id=%d) at trigger price %d" + (stopOrder.type == OrderType.STOP_LIMIT? ", limitPrice = " + stopOrder.price : "") + "\n", stopOrder.side, stopOrder.type, stopOrder.id, stopOrder.stopPrice);
+            System.out.printf("-> Triggered: %s %s (id=%d) at trigger price %d" + (stopOrder.type == OrderType.STOP_LIMIT? ", limitPrice = " + stopOrder.price : "") + "\n", stopOrder.side, stopOrder.type, stopOrder.orderId, stopOrder.stopPrice);
 
             stopOrder.convertToExecutableOrderType();
 
@@ -223,12 +220,12 @@ public class MatchEngImpl implements MatchEng {
                         (incoming.side == OrderSide.SELL && stopOrder.price <= lastPrice);
 
                 if (shouldAddToCommandQueue) {
-                    orders.remove(stopOrder.id);
+                    orders.remove(stopOrder.orderId);
                     commandQueue.add(stopOrder);
                     System.out.println("Add to command queue");
                 } else {
                     DirectOrder directOrder = orderBook.addOrder(stopOrder);
-                    orders.put(stopOrder.id, directOrder);
+                    orders.put(stopOrder.orderId, directOrder);
                     System.out.println("Add to order book");
                 }
             }
@@ -238,11 +235,11 @@ public class MatchEngImpl implements MatchEng {
                                 (stopOrder.side == OrderSide.BUY && stopOrder.price >= lastPrice);
 
                 if (shouldMatch) {
-                    orders.remove(stopOrder.id);
+                    orders.remove(stopOrder.orderId);
                     matchDirectOrderInStopBook(cmd, incoming, stopOrder);
                 } else {
                     DirectOrder directOrder = orderBook.addOrder(stopOrder);
-                    orders.put(stopOrder.id, directOrder);
+                    orders.put(stopOrder.orderId, directOrder);
                     System.out.println("Add to order book");
                 }
             }
@@ -259,7 +256,7 @@ public class MatchEngImpl implements MatchEng {
 
         long tradeSize = Math.min(incoming.remainingQuantity, stopOrder.remainingQuantity);
         System.out.printf("Trade: %s (Maker) %d vs %s (Taker) %d @%d => %d\n",
-                stopOrder.side, stopOrder.id, incoming.side, incoming.id, lastTradePrice, tradeSize);
+                stopOrder.side, stopOrder.orderId, incoming.side, incoming.orderId, lastTradePrice, tradeSize);
 
         incoming.matching(stopOrder, tradeSize);
         cmd.matcherEvents.add(MatcherTradeEvent.createTradeEvent(incoming, stopOrder, lastTradePrice, tradeSize));
@@ -270,19 +267,18 @@ public class MatchEngImpl implements MatchEng {
         }
     }
 
-    private void performMatch(OrderCommand cmd, Order incoming, DirectOrder restingDirect, long tradeSize) {
-        Order resting = restingDirect.order;
+    private void performMatch(OrderCommand cmd, Order incoming, DirectOrder resting, long tradeSize) {
         lastTradePrice = resting.price;
         incoming.matching(resting, tradeSize);
         System.out.printf("Trade: %s (Maker) %d vs %s (Taker) %d @%d => %d\n",
-                resting.side, resting.id, incoming.side, incoming.id, resting.price, tradeSize);
+                resting.side, resting.orderId, incoming.side, incoming.orderId, resting.price, tradeSize);
 
-        restingDirect.priceLevel.removeTradeVolume(resting.userId, tradeSize);
+        resting.priceLevel.removeTradeVolume(resting.userId, tradeSize);
         cmd.matcherEvents.add(MatcherTradeEvent.createTradeEvent(incoming, resting, resting.price, tradeSize));
 
         if(resting.displayedQuantity == 0) {
-            restingDirect.remove();
-            orders.remove(resting.id);
+            resting.remove();
+            orders.remove(resting.orderId);
         }
     }
 
@@ -340,18 +336,18 @@ public class MatchEngImpl implements MatchEng {
 
             while (order != null) {
                 expectedBucketOrders++;
-                expectedBucketRemainingQuantity += order.order.remainingQuantity;
-                expectedBucketDisplayedQuantity += order.order.displayedQuantity;
+                expectedBucketRemainingQuantity += order.remainingQuantity;
+                expectedBucketDisplayedQuantity += order.displayedQuantity;
 
-                if (ordersInChain.containsKey(order.order.id)) {
+                if (ordersInChain.containsKey(order.orderId)) {
                     thrw("duplicate orderid in the chain");
                 }
-                ordersInChain.put(order.order.id, order);
+                ordersInChain.put(order.orderId, order);
 
                 if (lastOrder != null && order.next != lastOrder) {
                     thrw("incorrect next reference");
                 }
-                if (order.priceLevel.price != order.order.price) {
+                if (order.priceLevel.price != order.price) {
                     thrw("price differs");
                 }
 
@@ -359,14 +355,14 @@ public class MatchEngImpl implements MatchEng {
                     thrw("unexpected price level");
                 }
 
-                final PriceLevel knownBucket = bucketsFoundInChain.get(order.order.price);
+                final PriceLevel knownBucket = bucketsFoundInChain.get(order.price);
                 if (knownBucket == null) {
-                    bucketsFoundInChain.put(order.order.price, order.priceLevel);
+                    bucketsFoundInChain.put(order.price, order.priceLevel);
                 } else if (knownBucket != order.priceLevel) {
                     thrw("found two different buckets having same price");
                 }
 
-                if (side != order.order.side) {
+                if (side != order.side) {
                     thrw("not expected order action");
                 }
 
@@ -425,18 +421,18 @@ public class MatchEngImpl implements MatchEng {
 
             while (order != null) {
                 expectedBucketOrders++;
-                expectedBucketRemainingQuantity += order.order.remainingQuantity;
-                expectedBucketDisplayedQuantity += order.order.displayedQuantity;
+                expectedBucketRemainingQuantity += order.remainingQuantity;
+                expectedBucketDisplayedQuantity += order.displayedQuantity;
 
-                if (ordersInChain.containsKey(order.order.id)) {
+                if (ordersInChain.containsKey(order.orderId)) {
                     thrw("duplicate orderid in the chain");
                 }
-                ordersInChain.put(order.order.id, order);
+                ordersInChain.put(order.orderId, order);
 
                 if (lastOrder != null && order.next != lastOrder) {
                     thrw("incorrect next reference");
                 }
-                if (order.priceLevel.price != order.order.stopPrice) {
+                if (order.priceLevel.price != order.stopPrice) {
                     thrw("price differs");
                 }
 
@@ -444,9 +440,9 @@ public class MatchEngImpl implements MatchEng {
                     thrw("unexpected price level");
                 }
 
-                final PriceLevel knownBucket = bucketsFoundInChain.get(order.order.stopPrice);
+                final PriceLevel knownBucket = bucketsFoundInChain.get(order.stopPrice);
                 if (knownBucket == null) {
-                    bucketsFoundInChain.put(order.order.stopPrice, order.priceLevel);
+                    bucketsFoundInChain.put(order.stopPrice, order.priceLevel);
                 } else if (knownBucket != order.priceLevel) {
                     thrw("found two different buckets having same price");
                 }

@@ -1,7 +1,6 @@
 package org.example.v4.common;
 
 
-import org.example.v4.common.command.OrderCommand;
 import org.example.v4.order.Order;
 
 public final class MatcherTradeEvent {
@@ -17,8 +16,8 @@ public final class MatcherTradeEvent {
     public static MatcherTradeEvent createTradeEvent(Order taker, Order maker, long price, long size) {
         MatcherTradeEvent event = new MatcherTradeEvent();
         event.eventType = MatcherEventType.TRADE;
-        event.takerOrderId = taker.id;
-        event.makerOrderId = maker.id;
+        event.takerOrderId = taker.orderId;
+        event.makerOrderId = maker.orderId;
         event.price = price;
         event.size = size;
         event.takerCompleted = taker.remainingQuantity == 0;
@@ -29,7 +28,7 @@ public final class MatcherTradeEvent {
     public static MatcherTradeEvent createRejectEvent(Order taker, long rejectedSize) {
         MatcherTradeEvent event = new MatcherTradeEvent();
         event.eventType = MatcherEventType.REJECT;
-        event.takerOrderId = taker.id;
+        event.takerOrderId = taker.orderId;
         event.price = taker.price;
         event.size = rejectedSize;
         event.takerCompleted = true;
@@ -39,7 +38,7 @@ public final class MatcherTradeEvent {
     public static MatcherTradeEvent createReduceEvent(Order taker, long reduceSize, boolean takerCompleted) {
         MatcherTradeEvent event = new MatcherTradeEvent();
         event.eventType = MatcherEventType.REDUCE;
-        event.takerOrderId = taker.id;
+        event.takerOrderId = taker.orderId;
         event.price = taker.price;
         event.size = reduceSize;
         event.takerCompleted = takerCompleted;

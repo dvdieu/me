@@ -2,7 +2,7 @@ package org.example.v4.order;
 
 public class Order {
 
-    public long id;
+    public long orderId;
     public long userId;
     public OrderSide side;
     public OrderType type;
@@ -41,7 +41,7 @@ public class Order {
             details += " [displayed=" + displayedQuantity + ", hidden=" + hiddenQuantity + "]";
         }
 
-        details += " {id:" + id + ", user:" + userId + ", TIF:" + timeInForce + "}";
+        details += " {id:" + orderId + ", user:" + userId + ", TIF:" + timeInForce + "}";
         return details;
     }
 

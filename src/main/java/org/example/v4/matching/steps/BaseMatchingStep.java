@@ -43,9 +43,9 @@ public abstract class BaseMatchingStep implements MatchingStep {
     }
 
     protected boolean checkSelfMatching(MatchingContext context, DirectOrder resting) {
-        if(context.incoming.isSelfMatch(resting.order)) {
+        if(context.incoming.isSelfMatch(resting)) {
             resting.remove();
-            context.selfMatchOrders.add(resting.order);
+            context.selfMatchOrders.add(resting);
             return false;
         }
 

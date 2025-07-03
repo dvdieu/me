@@ -2,21 +2,33 @@ package org.example.v4.orderbook;
 
 import org.example.v4.order.Order;
 
-public class DirectOrder {
+public class DirectOrder extends Order {
 
-    public Order order;
     public PriceLevel priceLevel;
 
     public DirectOrder prev;
     public DirectOrder next;
 
     public DirectOrder(Order order, PriceLevel priceLevel) {
-        this.order = order;
+        this.orderId = order.orderId;
+        this.userId = order.userId;
+        this.side = order.side;
+        this.type = order.type;
+        this.timeInForce = order.timeInForce;
+        this.price = order.price;
+        this.stopPrice = order.stopPrice;
+        this.totalQuantity = order.totalQuantity;
+        this.remainingQuantity = order.remainingQuantity;
+        this.displayedQuantity = order.displayedQuantity;
+        this.hiddenQuantity = order.hiddenQuantity;
+        this.isIceberg = order.isIceberg;
+        this.icebergPeak = order.icebergPeak;
+
         this.priceLevel = priceLevel;
     }
 
     public void remove() {
-        priceLevel.removeOrderVolume(order);
+        priceLevel.removeOrderVolume(this);
 
         if(prev != null) {
             prev.next = next;

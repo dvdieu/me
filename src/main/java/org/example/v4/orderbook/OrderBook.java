@@ -45,7 +45,7 @@ public class OrderBook {
         order.remove();
 
         if(order.priceLevel.isEmpty()) {
-            getLevels(order.order.side).remove(order.order.price);
+            getLevels(order.side).remove(order.price);
         }
     }
 

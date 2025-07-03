@@ -9,23 +9,10 @@ import org.example.v4.order.TimeInForce;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderCommand {
+public class OrderCommand extends Order {
 
     public OrderCommandType command;
 
-    public long orderId;
-    public long userId;
-    public OrderSide side;
-    public OrderType type;
-    public TimeInForce timeInForce;
-    public long price;
-    public long stopPrice;
-    public long totalQuantity;
-    public long remainingQuantity;
-    public long displayedQuantity;
-    public long hiddenQuantity;
-    public boolean isIceberg;
-    public long icebergPeak;
     public boolean postOnly;
     public boolean stopAfterFirstCommand;
 
@@ -102,25 +89,6 @@ public class OrderCommand {
     public OrderCommand postOnly() {
         this.postOnly = true;
         return this;
-    }
-
-    public Order buildOrder() {
-        Order order = new Order();
-        order.id = orderId;
-        order.userId = userId;
-        order.side = side;
-        order.type = type;
-        order.timeInForce = timeInForce;
-        order.price = price;
-        order.stopPrice = stopPrice;
-        order.totalQuantity = totalQuantity;
-        order.remainingQuantity = remainingQuantity;
-        order.displayedQuantity = displayedQuantity;
-        order.hiddenQuantity = hiddenQuantity;
-        order.isIceberg = isIceberg;
-        order.icebergPeak = icebergPeak;
-
-        return order;
     }
 
 }
