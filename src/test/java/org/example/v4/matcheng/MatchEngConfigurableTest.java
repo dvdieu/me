@@ -53,7 +53,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(3));
+        assertThat(cmd.extractEvents().size(), is(3));
         checkEventTrade(cmd, 0, 123,8L, 201000L, 28L);
         checkEventTrade(cmd, 1, 123, 9L, 201000L,32L);
         checkEventTrade(cmd, 2, 123, 100L, 201000L, 95L);
@@ -80,7 +80,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(3));
+        assertThat(cmd.extractEvents().size(), is(3));
         checkEventTrade(cmd, 0, 123, 8L, 201000L, 28L);
         checkEventTrade(cmd, 1, 123, 100L, 201000L, 100L);
         checkEventTrade(cmd, 2, 123,101L, 201000L, 27L);
@@ -107,7 +107,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(6));
+        assertThat(cmd.extractEvents().size(), is(6));
         checkEventTrade(cmd, 0, 123, 8L, 201000L, 16L); // PRO-Rata       28/262 * 155 = 16
         checkEventTrade(cmd, 1, 123, 9L, 201000L, 18L); // PRO-Rata       32/262 * 155 = 18
         checkEventTrade(cmd, 2, 123, 100L, 201000L, 59L); // PRO-Rata     100/262 * 155 = 59
@@ -136,7 +136,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(6));
+        assertThat(cmd.extractEvents().size(), is(6));
 
         checkEventRejection(cmd, 0, 238);
         checkEventTrade(cmd, 1, 123, 8L, 201000L, 28L);
@@ -166,7 +166,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(5));
+        assertThat(cmd.extractEvents().size(), is(5));
         checkEventTrade(cmd, 0, 123, 8L, 201000L, 18L); // PRO-Rata       28/230 * 155 = 18
         checkEventTrade(cmd, 1, 123, 100L, 201000L, 67L); // PRO-Rata     100/230 * 155 = 67
         checkEventTrade(cmd, 2, 123, 101L, 201000L, 67L); // PRO-Rata     100/230 * 155 = 67
@@ -197,7 +197,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(5));
+        assertThat(cmd.extractEvents().size(), is(5));
         checkEventTrade(cmd, 0, 123,8L, 201000L, 7L);
         checkEventTrade(cmd, 1, 123,9L, 201000L, 9L);
         checkEventTrade(cmd, 2, 123, 8L, 201000L, 21L);
@@ -225,7 +225,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(6));
+        assertThat(cmd.extractEvents().size(), is(6));
 
         checkEventRejection(cmd, 0, 238);
         checkEventTrade(cmd, 1, 123,8L, 201000L, 28L);
@@ -255,7 +255,7 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(4));
+        assertThat(cmd.extractEvents().size(), is(4));
         checkEventTrade(cmd, 0, 123,8L, 201000L, 7L);
         checkEventTrade(cmd, 1, 123,8L, 201000L, 21L);
         checkEventTrade(cmd, 2, 123,100L, 201000L, 100L);

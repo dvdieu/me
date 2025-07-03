@@ -48,7 +48,7 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
         );
 
         assertEquals(expected, snapshot);
-        assertThat(cmd.matcherEvents.size(), is(6));
+        assertThat(cmd.extractEvents().size(), is(6));
         checkEventTrade(cmd, 0, 100,1, 94, 1);
         checkEventTrade(cmd, 1, 100, 2, 96, 1);
         checkEventTrade(cmd, 2, 100, 3, 96, 5);
@@ -87,7 +87,7 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
         );
 
         assertEquals(expected, snapshot);
-        assertThat(cmd.matcherEvents.size(), is(7));
+        assertThat(cmd.extractEvents().size(), is(7));
         checkEventRejection(cmd, 0, 3);
         checkEventTrade(cmd, 1, 100, 1, 94, 1);
         checkEventTrade(cmd, 2, 100, 2, 96, 1);
@@ -127,7 +127,7 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
         );
 
         assertEquals(expected, snapshot);
-        assertThat(cmd.matcherEvents.size(), is(6));
+        assertThat(cmd.extractEvents().size(), is(6));
         checkEventTrade(cmd, 0, 100,1, 106, 1);
         checkEventTrade(cmd, 1, 100,2, 104, 1);
         checkEventTrade(cmd, 2, 100,3, 104, 5);
@@ -167,7 +167,7 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(7));
+        assertThat(cmd.extractEvents().size(), is(7));
         checkEventRejection(cmd, 0, 3);
         checkEventTrade(cmd, 1, 100, 1, 106, 1);
         checkEventTrade(cmd, 2, 100,2, 104, 1);
@@ -208,7 +208,7 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(7));
+        assertThat(cmd.extractEvents().size(), is(7));
         checkEventTrade(cmd, 0, 100, 1, 94, 1);
         checkEventTrade(cmd, 1, 100, 2, 96, 1);
         checkEventTrade(cmd, 2, 100, 3, 96, 5);
@@ -241,7 +241,7 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(0));
+        assertThat(cmd.extractEvents().size(), is(0));
     }
 
     @Test
@@ -267,7 +267,7 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(1));
+        assertThat(cmd.extractEvents().size(), is(1));
         checkEventTrade(cmd, 0, 4, 2, 96, 1);
     }
 
@@ -294,7 +294,7 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(4));
+        assertThat(cmd.extractEvents().size(), is(4));
         checkEventTrade(cmd, 0, 10,2, 110, 10);
         checkEventTrade(cmd, 1, 10, 1, 100, 10);
         checkEventTrade(cmd, 2, 10, 3, 100, 3);
@@ -331,7 +331,7 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(6));
+        assertThat(cmd.extractEvents().size(), is(6));
         checkEventTrade(cmd, 0, 100,1, 93, 1);
         checkEventTrade(cmd, 1, 100,2, 96, 1);
         checkEventTrade(cmd, 2, 100,3, 96, 5);
@@ -371,7 +371,7 @@ class MatchEngStopOrderTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(7));
+        assertThat(cmd.extractEvents().size(), is(7));
         checkEventRejection(cmd, 0,  3, 5);
         checkEventTrade(cmd, 1, 100,2, 96, 1);
         checkEventTrade(cmd, 2, 100,1, 93, 1);

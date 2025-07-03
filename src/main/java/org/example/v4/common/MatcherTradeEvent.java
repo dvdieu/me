@@ -13,6 +13,8 @@ public final class MatcherTradeEvent {
     public boolean takerCompleted;
     public boolean makerCompleted;
 
+    public MatcherTradeEvent nextEvent;
+
     public static MatcherTradeEvent createTradeEvent(Order taker, Order maker, long price, long size) {
         MatcherTradeEvent event = new MatcherTradeEvent();
         event.eventType = MatcherEventType.TRADE;

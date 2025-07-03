@@ -16,7 +16,8 @@ public class OrderCommand extends Order {
     public boolean postOnly;
     public boolean stopAfterFirstCommand;
 
-    public List<MatcherTradeEvent> matcherEvents = new ArrayList<>();
+    public MatcherTradeEvent matcherEvent;
+    public MatcherTradeEvent matcherEventTail;
 
 
     public static OrderCommand cancel(long orderId, long uid) {
@@ -91,4 +92,37 @@ public class OrderCommand extends Order {
         return this;
     }
 
+    public void addTradeEvent(MatcherTradeEvent event) {
+        if(matcherEvent == null) {
+            matcherEvent = event;
+        } else {
+            matcherEventTail.nextEvent = event;
+        }
+        matcherEventTail = event;
+    }
+
+    public void addTradeEventAtFirst(MatcherTradeEvent event) {
+        if(matcherEventTail == null) {
+            matcherEventTail = event;
+        } else {
+            event.nextEvent = matcherEvent;
+        }
+        matcherEvent = event;
+    }
+
+
+    public List<MatcherTradeEvent> extractedTradeEvents;
+    public List<MatcherTradeEvent> extractEvents() {
+        if(extractedTradeEvents == null) {
+            extractedTradeEvents = new ArrayList<>();
+
+            MatcherTradeEvent mte = this.matcherEvent;
+            while (mte != null) {
+                extractedTradeEvents.add(mte);
+                mte = mte.nextEvent;
+            }
+        }
+
+        return extractedTradeEvents;
+    }
 }

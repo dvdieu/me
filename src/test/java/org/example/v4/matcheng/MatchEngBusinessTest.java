@@ -96,7 +96,7 @@ public class MatchEngBusinessTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(7));
+        assertThat(cmd.extractEvents().size(), is(7));
         checkEventTrade(cmd, 0, 1000,111, 100, 10);
         checkEventTrade(cmd, 1, 1000,112, 101, 12);
         checkEventTrade(cmd, 2, 1000,9, 101, 3);
@@ -128,7 +128,7 @@ public class MatchEngBusinessTest extends BaseMatchEngTest {
 
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(14));
+        assertThat(cmd.extractEvents().size(), is(14));
         checkEventTrade(cmd, 0, 1000,102, 98, 13);
         checkEventTrade(cmd, 1, 1000,21, 98, 4);
         checkEventTrade(cmd, 2, 1000,103, 97, 14);

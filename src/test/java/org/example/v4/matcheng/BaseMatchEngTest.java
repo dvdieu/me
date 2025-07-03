@@ -6,6 +6,8 @@ import org.example.v4.common.command.CommandResultCode;
 import org.example.v4.common.command.OrderCommand;
 import org.example.v4.order.Order;
 
+import java.util.List;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,7 +22,7 @@ public class BaseMatchEngTest {
 
     // ------------------------------- UTILITY METHODS --------------------------
     public void checkEventTrade(OrderCommand cmd, int index, long takerOrderId, long makerOrderId, long price, long size) {
-        MatcherTradeEvent event = cmd.matcherEvents.get(index);
+        MatcherTradeEvent event = cmd.extractEvents().get(index);
         assertThat(event.eventType, is(MatcherEventType.TRADE));
         assertThat(event.takerOrderId, is(takerOrderId));
         assertThat(event.makerOrderId, is(makerOrderId));
@@ -29,7 +31,7 @@ public class BaseMatchEngTest {
     }
 
     public void checkEventRejection(OrderCommand cmd, int index, long size) {
-        MatcherTradeEvent event = cmd.matcherEvents.get(index);
+        MatcherTradeEvent event = cmd.extractEvents().get(index);
         assertThat(event.eventType, is(MatcherEventType.REJECT));
         assertThat(event.size, is(size));
         assertThat(event.takerOrderId, is(cmd.orderId));
@@ -38,7 +40,7 @@ public class BaseMatchEngTest {
     }
 
     public void checkEventRejection(OrderCommand cmd, int index, long takerOrderId, long size) {
-        MatcherTradeEvent event = cmd.matcherEvents.get(index);
+        MatcherTradeEvent event = cmd.extractEvents().get(index);
         assertThat(event.eventType, is(MatcherEventType.REJECT));
         assertThat(event.size, is(size));
         assertThat(event.takerOrderId, is(takerOrderId));
@@ -47,7 +49,7 @@ public class BaseMatchEngTest {
     }
 
     public void checkEventReduce(OrderCommand cmd, int index, long size) {
-        MatcherTradeEvent event = cmd.matcherEvents.get(index);
+        MatcherTradeEvent event = cmd.extractEvents().get(index);
         assertThat(event.eventType, is(MatcherEventType.REDUCE));
         assertThat(event.size, is(size));
         assertThat(event.takerOrderId, is(cmd.orderId));

@@ -43,7 +43,7 @@ public class MatchEngImpl implements MatchEng {
     @Override
     public CommandResultCode placeOrder(OrderCommand cmd) {
         if(orders.containsKey(cmd.orderId)) {
-            cmd.matcherEvents.add(MatcherTradeEvent.createRejectEvent(cmd, cmd.remainingQuantity));
+            cmd.addTradeEvent(MatcherTradeEvent.createRejectEvent(cmd, cmd.remainingQuantity));
             System.out.println("duplicate orderId: " + cmd.orderId);
             return CommandResultCode.SUCCESS;
         }
@@ -64,7 +64,7 @@ public class MatchEngImpl implements MatchEng {
             PriceLevel priceLevel = orderBook.getBestLevel(cmd.side.getOpposite());
             if(priceLevel != null && cmd.isPriceAcceptable(priceLevel.price)) {
                 System.out.println("-> Post Only check FAILED: limitPrice: " + cmd.price + ", bestPrice: " + priceLevel.price);
-                cmd.matcherEvents.addFirst(MatcherTradeEvent.createRejectEvent(cmd, cmd.remainingQuantity));
+                cmd.addTradeEvent(MatcherTradeEvent.createRejectEvent(cmd, cmd.remainingQuantity));
                 return CommandResultCode.SUCCESS;
             }
         }
@@ -102,7 +102,7 @@ public class MatchEngImpl implements MatchEng {
 
         if(order.type == OrderType.LIMIT || order.type == OrderType.MARKET) {
             orderBook.removeOrder(order);
-            cmd.matcherEvents.add(MatcherTradeEvent.createReduceEvent(order, order.remainingQuantity, true));
+            cmd.addTradeEvent(MatcherTradeEvent.createReduceEvent(order, order.remainingQuantity, true));
         } else {
             stopBook.removeOrder(order);
         }
@@ -123,7 +123,7 @@ public class MatchEngImpl implements MatchEng {
             long available = calculatePotentialFill(incoming);
             if(available < needed) {
                 System.out.println("-> FOK check FAILED: needed " + needed + ", available " + available);
-                cmd.matcherEvents.addFirst(MatcherTradeEvent.createRejectEvent(incoming, incoming.remainingQuantity));
+                cmd.addTradeEventAtFirst(MatcherTradeEvent.createRejectEvent(incoming, incoming.remainingQuantity));
                 return;
             }
         }
@@ -137,7 +137,7 @@ public class MatchEngImpl implements MatchEng {
                 orders.put(incoming.orderId, directOrder);
                 System.out.println("-> Partially filled, " + incoming.remainingQuantity + " remaining added to book as resting order");
             } else {
-                cmd.matcherEvents.addFirst(MatcherTradeEvent.createRejectEvent(incoming, incoming.remainingQuantity));
+                cmd.addTradeEventAtFirst(MatcherTradeEvent.createRejectEvent(incoming, incoming.remainingQuantity));
                 System.out.println("-> IOC leftover cancelled: " + incoming.remainingQuantity + " not filled");
             }
         }
@@ -259,7 +259,7 @@ public class MatchEngImpl implements MatchEng {
                 stopOrder.side, stopOrder.orderId, incoming.side, incoming.orderId, lastTradePrice, tradeSize);
 
         incoming.matching(stopOrder, tradeSize);
-        cmd.matcherEvents.add(MatcherTradeEvent.createTradeEvent(incoming, stopOrder, lastTradePrice, tradeSize));
+        cmd.addTradeEvent(MatcherTradeEvent.createTradeEvent(incoming, stopOrder, lastTradePrice, tradeSize));
 
         stopOrder.correctOverfilledIcebergDisplay();
         if(stopOrder.remainingQuantity > 0) {
@@ -274,7 +274,7 @@ public class MatchEngImpl implements MatchEng {
                 resting.side, resting.orderId, incoming.side, incoming.orderId, resting.price, tradeSize);
 
         resting.priceLevel.removeTradeVolume(resting.userId, tradeSize);
-        cmd.matcherEvents.add(MatcherTradeEvent.createTradeEvent(incoming, resting, resting.price, tradeSize));
+        cmd.addTradeEvent(MatcherTradeEvent.createTradeEvent(incoming, resting, resting.price, tradeSize));
 
         if(resting.displayedQuantity == 0) {
             resting.remove();

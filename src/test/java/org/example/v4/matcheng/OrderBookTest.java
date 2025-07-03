@@ -123,7 +123,7 @@ public class OrderBookTest extends BaseMatchEngTest {
         OrderCommand cmd = OrderCommand.createStandardOrder(1, UID_1, SELL, LIMIT, GTC, 81600, 100);
         processAndValidate(matchEng, cmd, SUCCESS);
 
-        assertThat(cmd.matcherEvents.size(), is(1));
+        assertThat(cmd.extractEvents().size(), is(1));
     }
 
     @Test
@@ -135,7 +135,7 @@ public class OrderBookTest extends BaseMatchEngTest {
         expectedState.setBidVolume(1, 1).decrementBidOrdersNum(1);
         assertEquals(expectedState.build(), matchEng.getL2MarketData());
 
-        assertThat(cmd.matcherEvents.size(), is(1));
+        assertThat(cmd.extractEvents().size(), is(1));
         checkEventReduce(cmd, 0, 20L);
     }
 
@@ -148,7 +148,7 @@ public class OrderBookTest extends BaseMatchEngTest {
         expectedState.setAskVolume(0, 25).decrementAskOrdersNum(0);
         assertEquals(expectedState.build(), matchEng.getL2MarketData());
 
-        assertThat(cmd.matcherEvents.size(), is(1));
+        assertThat(cmd.extractEvents().size(), is(1));
         checkEventReduce(cmd, 0, 50L);
     }
 
@@ -156,12 +156,12 @@ public class OrderBookTest extends BaseMatchEngTest {
     public void shouldRemoveOrderAndEmptyBucket() {
         OrderCommand order2Cmd = OrderCommand.cancel(2, UID_1);
         processAndValidate(matchEng, order2Cmd, SUCCESS);
-        assertThat(order2Cmd.matcherEvents.size(), is(1));
+        assertThat(order2Cmd.extractEvents().size(), is(1));
         checkEventReduce(order2Cmd, 0, 50L);
 
         OrderCommand order3Cmd = OrderCommand.cancel(3, UID_1);
         processAndValidate(matchEng, order3Cmd, SUCCESS);
-        assertThat(order3Cmd.matcherEvents.size(), is(1));
+        assertThat(order3Cmd.extractEvents().size(), is(1));
         checkEventReduce(order3Cmd, 0, 25L);
 
         assertEquals(expectedState.removeAsk(0).build(), matchEng.getL2MarketData());
@@ -180,7 +180,7 @@ public class OrderBookTest extends BaseMatchEngTest {
         L2MarketData expected = expectedState.setBidVolume(0, 30).build();
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(1));
+        assertThat(cmd.extractEvents().size(), is(1));
         checkEventTrade(cmd, 0, 123, 4L, 81593, 10L);
     }
 
@@ -195,7 +195,7 @@ public class OrderBookTest extends BaseMatchEngTest {
         L2MarketData expected = expectedState.removeBid(0).setBidVolume(0, 20).build();
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(2));
+        assertThat(cmd.extractEvents().size(), is(2));
         checkEventTrade(cmd,  0, 123, 4L, 81593, 40L);
         checkEventTrade(cmd, 1, 123, 5L, 81590, 1L);
 
@@ -215,7 +215,7 @@ public class OrderBookTest extends BaseMatchEngTest {
         L2MarketData expected = expectedState.removeAsk(0).removeAsk(0).build();
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(3));
+        assertThat(cmd.extractEvents().size(), is(3));
         checkEventTrade(cmd, 0, 123, 2L, 81599L, 50L);
         checkEventTrade(cmd, 1, 123, 3L, 81599L, 25L);
         checkEventTrade(cmd, 2, 123, 1L, 81600L, 100L);
@@ -237,7 +237,7 @@ public class OrderBookTest extends BaseMatchEngTest {
         L2MarketData expected = expectedState.removeAllAsks().build();
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(7));
+        assertThat(cmd.extractEvents().size(), is(7));
 
         // 6 trades generated, first comes rejection with size=25 left unmatched
         checkEventRejection(cmd, 0, 25L);
@@ -256,7 +256,7 @@ public class OrderBookTest extends BaseMatchEngTest {
         L2MarketData expected = expectedState.setAskVolume(0, 74).build();
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(1));
+        assertThat(cmd.extractEvents().size(), is(1));
         checkEventTrade(cmd, 0, 123, 2L, 81599, 1L);
     }
 
@@ -271,7 +271,7 @@ public class OrderBookTest extends BaseMatchEngTest {
         L2MarketData expected = expectedState.removeAsk(0).insertBid(0, 81599, 2).build();
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(2));
+        assertThat(cmd.extractEvents().size(), is(2));
 
         checkEventTrade(cmd, 0, 123, 2L, 81599, 50L);
         checkEventTrade(cmd, 1, 123, 3L, 81599, 25L);
@@ -288,7 +288,7 @@ public class OrderBookTest extends BaseMatchEngTest {
         L2MarketData expected = expectedState.removeAsk(0).setAskVolume(0, 98).build();
         assertEquals(expected, snapshot);
 
-        assertThat(cmd.matcherEvents.size(), is(3));
+        assertThat(cmd.extractEvents().size(), is(3));
 
         checkEventTrade(cmd, 0, 123,2L, 81599, 50L);
         checkEventTrade(cmd, 1, 123,3L, 81599, 25L);
@@ -307,7 +307,7 @@ public class OrderBookTest extends BaseMatchEngTest {
         assertEquals(expected, snapshot);
 
         // trades only, rejection not generated for limit order
-        assertThat(cmd.matcherEvents.size(), is(6));
+        assertThat(cmd.extractEvents().size(), is(6));
 
         checkEventTrade(cmd, 0, 123,2L, 81599, 50L);
         checkEventTrade(cmd, 1, 123,3L, 81599, 25L);
