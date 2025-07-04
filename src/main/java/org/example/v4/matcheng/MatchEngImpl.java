@@ -162,7 +162,9 @@ public class MatchEngImpl implements MatchEng {
 
             available += entry.getValue().getRemainingQuantityWithoutUser(order.userId);
 
-            available += stopBook.calculateLiquidity(order, prevPrice, price);
+            if(prevPrice != 0) {
+                available += stopBook.calculateLiquidity(order, prevPrice, price);
+            }
 
             prevPrice = price;
         }
