@@ -1,7 +1,5 @@
 package org.example.v4.order;
 
-import org.example.v4.common.command.OrderCommand;
-
 public class Order {
 
     public long orderId;

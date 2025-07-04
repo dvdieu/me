@@ -23,6 +23,7 @@ public class DirectOrder extends Order {
         this.hiddenQuantity = order.hiddenQuantity;
         this.isIceberg = order.isIceberg;
         this.icebergPeak = order.icebergPeak;
+        this.postOnly = order.postOnly;
 
         this.priceLevel = priceLevel;
     }
