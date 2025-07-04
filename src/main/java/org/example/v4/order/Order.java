@@ -1,5 +1,7 @@
 package org.example.v4.order;
 
+import org.example.v4.common.command.OrderCommand;
+
 public class Order {
 
     public long orderId;
@@ -15,6 +17,7 @@ public class Order {
     public long hiddenQuantity;
     public boolean isIceberg;
     public long icebergPeak;
+    public boolean postOnly;
 
     public Order createIcebergChild() {
         if (this.displayedQuantity > 0) return this;

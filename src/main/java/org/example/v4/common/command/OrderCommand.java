@@ -12,8 +12,6 @@ import java.util.List;
 public class OrderCommand extends Order {
 
     public OrderCommandType command;
-
-    public boolean postOnly;
     public boolean stopAfterFirstCommand;
 
     public MatcherTradeEvent matcherEvent;
@@ -85,7 +83,6 @@ public class OrderCommand extends Order {
 
         return order;
     }
-
 
     public OrderCommand postOnly() {
         this.postOnly = true;
