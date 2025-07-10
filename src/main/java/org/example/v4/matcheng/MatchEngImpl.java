@@ -60,15 +60,6 @@ public class MatchEngImpl implements MatchEng {
             cmd.type = cmd.type.executableType;
         }
 
-        if(cmd.postOnly) {
-            PriceLevel priceLevel = orderBook.getBestLevel(cmd.side.getOpposite());
-            if(priceLevel != null && cmd.isPriceAcceptable(priceLevel.price)) {
-                System.out.println("-> Post Only check FAILED: limitPrice: " + cmd.price + ", bestPrice: " + priceLevel.price);
-                cmd.addTradeEvent(MatcherTradeEvent.createRejectEvent(cmd, cmd.remainingQuantity));
-                return CommandResultCode.SUCCESS;
-            }
-        }
-
         commandQueue.add(cmd);
 
         while(!commandQueue.isEmpty()) {
@@ -123,6 +114,15 @@ public class MatchEngImpl implements MatchEng {
             long available = calculatePotentialFill(incoming);
             if(available < needed) {
                 System.out.println("-> FOK check FAILED: needed " + needed + ", available " + available);
+                cmd.addTradeEvent(MatcherTradeEvent.createRejectEvent(incoming, incoming.remainingQuantity));
+                return;
+            }
+        }
+
+        if(incoming.postOnly) {
+            PriceLevel priceLevel = orderBook.getBestLevel(incoming.side.getOpposite());
+            if(priceLevel != null && incoming.isPriceAcceptable(priceLevel.price)) {
+                System.out.println("-> Post Only check FAILED: limitPrice: " + incoming.price + ", bestPrice: " + priceLevel.price);
                 cmd.addTradeEvent(MatcherTradeEvent.createRejectEvent(incoming, incoming.remainingQuantity));
                 return;
             }
