@@ -46,8 +46,7 @@ public class StopBook {
         for (PriceLevel priceLevel : subMap.values()) {
             DirectOrder order = priceLevel.head;
             while (order != null) {
-                if (incoming.side != order.side && order.timeInForce != TimeInForce.FOK
-                        && !order.postOnly && !incoming.isSelfMatch(order)
+                if (incoming.side != order.side && order.timeInForce != TimeInForce.FOK && !incoming.isSelfMatch(order)
                         && (order.type == OrderType.STOP_MARKET || incoming.isPriceAcceptable(order.price))) {
                     totalLiquidity += order.remainingQuantity;
                 }

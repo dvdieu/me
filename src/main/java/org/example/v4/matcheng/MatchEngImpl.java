@@ -249,7 +249,7 @@ public class MatchEngImpl implements MatchEng {
     }
 
     private void matchDirectOrderInStopBook(OrderCommand cmd, Order incoming, Order stopOrder) {
-        if(incoming.remainingQuantity == 0 || incoming.isSelfMatch(stopOrder) || stopOrder.postOnly ||
+        if(incoming.remainingQuantity == 0 || incoming.isSelfMatch(stopOrder) ||
                 (stopOrder.timeInForce == TimeInForce.FOK && incoming.remainingQuantity < stopOrder.remainingQuantity)) {
             commandQueue.add(stopOrder);
             System.out.println("Add to command queue");
