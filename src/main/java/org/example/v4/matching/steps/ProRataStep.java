@@ -1,14 +1,13 @@
 package org.example.v4.matching.steps;
 
 
-import org.example.v4.matching.context.MatchingConfig;
 import org.example.v4.matching.context.MatchingContext;
 import org.example.v4.orderbook.DirectOrder;
 
 public class ProRataStep extends BaseMatchingStep {
 
     @Override
-    public void performAllocation(MatchingContext context, MatchingConfig config) {
+    public void performAllocation(MatchingContext context) {
         long bucketVolume = context.bucketRemaining;
         long remainingSize = context.incoming.remainingQuantity;
 
@@ -18,7 +17,7 @@ public class ProRataStep extends BaseMatchingStep {
                 long proRataPass = directOrder.displayedQuantity * remainingSize / bucketVolume;
                 long tradeSize = Math.min(proRataPass, context.incoming.remainingQuantity);
 
-                if(tradeSize >= config.proRataMin) {
+                if(tradeSize >= 1) {
                     context.performMatch(directOrder, tradeSize);
                 }
             }

@@ -1,12 +1,8 @@
 package org.example.v4.matching.steps;
 
 
-import org.example.v4.matching.context.MatchingConfig;
 import org.example.v4.matching.context.MatchingContext;
-import org.example.v4.order.Order;
 import org.example.v4.orderbook.DirectOrder;
-
-import java.util.Iterator;
 
 public abstract class BaseMatchingStep implements MatchingStep {
 
@@ -20,25 +16,25 @@ public abstract class BaseMatchingStep implements MatchingStep {
     }
 
     @Override
-    public void runStep(MatchingContext context, MatchingConfig config) {
-        if (canAllocate(context, config)) {
-            performAllocation(context, config);
+    public void runStep(MatchingContext context) {
+        if (canAllocate(context)) {
+            performAllocation(context);
         }
 
-        if (next != null && shouldContinue(context, config)) {
-            this.next.runStep(context, config);
+        if (next != null && shouldContinue(context)) {
+            this.next.runStep(context);
         }
     }
 
 
-    protected abstract void performAllocation(MatchingContext context, MatchingConfig config);
+    protected abstract void performAllocation(MatchingContext context);
 
 
-    protected boolean canAllocate(MatchingContext context, MatchingConfig config) {
+    protected boolean canAllocate(MatchingContext context) {
         return !context.priceLevel.isEmpty() && context.incoming.remainingQuantity > 0;
     }
 
-    protected boolean shouldContinue(MatchingContext context, MatchingConfig config) {
+    protected boolean shouldContinue(MatchingContext context) {
         return !context.priceLevel.isEmpty() && context.incoming.remainingQuantity > 0;
     }
 
