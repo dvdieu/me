@@ -213,8 +213,7 @@ public class MatchEngImpl implements MatchEng {
         List<DirectOrder> triggeredStopOrders = stopBook.getTriggeredStopOrders(prevPrice, lastPrice);
         for (DirectOrder stopOrder : triggeredStopOrders) {
             System.out.printf("-> Triggered: %s %s (id=%d) at trigger price %d" + (stopOrder.type == OrderType.STOP_LIMIT? ", limitPrice = " + stopOrder.price : "") + "\n", stopOrder.side, stopOrder.type, stopOrder.orderId, stopOrder.stopPrice);
-
-            stopOrder.convertToExecutableOrderType();
+            stopOrder.type = stopOrder.type.executableType;
 
             if(incoming.side == stopOrder.side) {
                 boolean shouldAddToCommandQueue = stopOrder.type == OrderType.MARKET ||

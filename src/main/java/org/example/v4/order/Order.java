@@ -63,10 +63,6 @@ public class Order {
         makerOrder.displayedQuantity -= tradeSize;
     }
 
-    public void convertToExecutableOrderType() {
-        this.type = this.type.executableType;
-    }
-
     public void correctOverfilledIcebergDisplay() {
         if(this.displayedQuantity < 0) {
             if(this.remainingQuantity > 0) {
