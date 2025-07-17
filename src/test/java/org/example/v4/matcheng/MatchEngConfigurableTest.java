@@ -199,9 +199,9 @@ public class MatchEngConfigurableTest extends BaseMatchEngTest {
 
         assertThat(cmd.extractEvents().size(), is(5));
         checkEventTrade(cmd, 0, 123,8L, 201000L, 7L);
-        checkEventTrade(cmd, 1, 123,9L, 201000L, 7L);
+        checkEventTrade(cmd, 1, 123,9L, 201000L, 9L);
         checkEventTrade(cmd, 2, 123, 8L, 201000L, 21L);
-        checkEventTrade(cmd, 3, 123,9L, 201000L, 25L);
+        checkEventTrade(cmd, 3, 123,9L, 201000L, 23L);
         checkEventTrade(cmd, 4, 123,100L, 201000L, 95L);
     }
 
