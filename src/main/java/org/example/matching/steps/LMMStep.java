@@ -5,6 +5,18 @@ import org.example.matching.context.MatchingConfig;
 import org.example.matching.context.MatchingContext;
 import org.example.orderbook.DirectOrder;
 
+/**
+ * A matching step that performs allocation based on LMM (Liquidity Market Maker) quotas.
+ *
+ * <p>This step allocates liquidity to eligible LMM participants based on their configured
+ * weight (per-thousand percentage) and a minimum fill threshold.</p>
+ *
+ * <p>Only orders from LMM participants (defined in {@code config.lmmPerThousands}) are eligible.
+ * Allocation is capped by a total LMM quota calculated as:
+ * {@code totalLmmPerThousand * incoming.remainingQuantity / 1000}.</p>
+ *
+ * <p>Self-matching orders are excluded.</p>
+ */
 public class LMMStep extends BaseMatchingStep {
 
     @Override

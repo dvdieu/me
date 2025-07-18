@@ -5,6 +5,15 @@ import org.example.order.Order;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represents a price level in the order book or stop book.
+ *
+ * <p>Each {@code PriceLevel} contains a doubly linked list of {@link DirectOrder}s
+ * ordered by time priority (FIFO). It also tracks aggregated quantities for
+ * fast access during matching and analytics.</p>
+ *
+ * <p>Supports user-level tracking to allow filtering out self-matching orders.</p>
+ */
 public class PriceLevel {
 
     public long price;

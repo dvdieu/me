@@ -6,6 +6,18 @@ import org.example.order.TimeInForce;
 
 import java.util.*;
 
+/**
+ * StopBook manages all pending stop orders in the matching engine.
+ *
+ * <p>Stop orders are stored in a price-sorted structure and are not active
+ * until their trigger price is crossed. This class provides logic to:</p>
+ * <ul>
+ *   <li>Add/remove stop orders</li>
+ *   <li>Trigger stop orders based on price movement</li>
+ *   <li>Calculate stop liquidity for FOK checks</li>
+ *   <li>Log internal stop order state</li>
+ * </ul>
+ */
 public class StopBook {
 
     private final TreeMap<Long, PriceLevel> stopLevels = new TreeMap<>();

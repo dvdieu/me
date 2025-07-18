@@ -1,5 +1,14 @@
 package org.example.order;
 
+/**
+ * Represents a trading order submitted by a user.
+ *
+ * <p>This class encapsulates all key attributes of an order, including its side,
+ * type, quantity, pricing, and special flags like iceberg and post-only.</p>
+ *
+ * <p>It also provides core logic for order matching, self-match detection,
+ * and iceberg refill behavior.</p>
+ */
 public class Order {
 
     public long orderId;
@@ -63,6 +72,21 @@ public class Order {
         makerOrder.displayedQuantity -= tradeSize;
     }
 
+    /**
+     * Adjusts the displayed and hidden quantities of an iceberg order
+     * after it has been matched directly, including its hidden portion.
+     *
+     * <p>This method is used in cases where iceberg orders are matched as
+     * incoming orders or triggered stop orders — scenarios where the entire
+     * quantity (including hidden part) may be matched at once.</p>
+     *
+     * <p>Since these orders bypass the usual "refill" mechanism, the
+     * {@code displayedQuantity} can become negative during matching.
+     * This method restores a valid displayed/hidden state based on the
+     * {@code remainingQuantity} and {@code icebergPeak}.</p>
+     *
+     * <p>If no quantity remains, both displayed and hidden values are reset to 0.</p>
+     */
     public void correctOverfilledIcebergDisplay() {
         if(this.displayedQuantity < 0) {
             if(this.remainingQuantity > 0) {

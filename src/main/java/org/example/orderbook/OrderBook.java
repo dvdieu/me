@@ -7,6 +7,16 @@ import org.example.common.L2MarketData;
 import java.util.Collections;
 import java.util.TreeMap;
 
+/**
+ * Central order book managing both buy and sell orders at various price levels.
+ *
+ * <p>Orders are grouped into {@link PriceLevel}s based on their price and side.
+ * Buy levels are sorted in descending order (highest price first),
+ * while sell levels are sorted in ascending order (lowest price first).</p>
+ *
+ * <p>This class supports order insertion, removal, and snapshot generation
+ * for Level 2 market data (L2).</p>
+ */
 public class OrderBook {
 
     private final TreeMap<Long, PriceLevel> sellLevels = new TreeMap<>();

@@ -9,6 +9,17 @@ import org.example.order.TimeInForce;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a command to be processed by the matching engine,
+ * such as placing or canceling an order.
+ *
+ * <p>This class extends {@link Order} and adds metadata used to
+ * drive command processing, such as command type and execution flags.</p>
+ *
+ * <p>Execution results (e.g., trades, rejections, cancels) are recorded
+ * as {@link MatcherTradeEvent} instances and attached to this object
+ * via {@code addTradeEvent(...)}.</p>
+ */
 public class OrderCommand extends Order {
 
     public OrderCommandType command;

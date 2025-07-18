@@ -2,6 +2,14 @@ package org.example.orderbook;
 
 import org.example.order.Order;
 
+/**
+ * Represents an order that has been inserted into a {@link PriceLevel},
+ * maintaining its position in the price level's linked list (FIFO).
+ *
+ * <p>{@code DirectOrder} extends {@link Order} and adds metadata required
+ * for efficient in-book order management, including linked list pointers
+ * and a reference to its parent {@link PriceLevel}.</p>
+ */
 public class DirectOrder extends Order {
 
     public PriceLevel priceLevel;

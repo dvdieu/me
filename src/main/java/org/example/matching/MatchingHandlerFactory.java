@@ -5,6 +5,13 @@ import org.example.matching.steps.*;
 
 import java.util.Map;
 
+/**
+ * Factory class for creating and providing {@link MatchingHandler} instances
+ * based on predefined {@link MatchingStrategy} configurations.
+ *
+ * <p>Each strategy maps to a distinct chain of {@link MatchingStep}s and a shared
+ * {@link MatchingConfig}, enabling flexible and pluggable matching logic.</p>
+ */
 public class MatchingHandlerFactory {
 
     private static final Map<MatchingStrategy, MatchingHandler> MATCHING_PROCESSOR_MAP = Map.of(
